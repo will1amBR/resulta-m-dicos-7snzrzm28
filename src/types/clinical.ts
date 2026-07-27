@@ -84,6 +84,17 @@ export interface Medication {
   active_ingredient?: string
   laboratory?: string
   presentation?: string
+  indications?: string
+  contraindications?: string
+  interactions?: string
+}
+
+export type CouncilType = 'CRM' | 'CRN' | 'CRP' | 'CRO' | 'COREN' | 'CREFITO'
+
+export interface MedicationAlert {
+  medication: string
+  severity: 'high' | 'medium' | 'none'
+  message: string
 }
 
 export interface Cid10Code {

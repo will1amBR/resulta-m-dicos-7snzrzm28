@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-07-27T20:42:50.590Z",
+  "generatedAt": "2026-07-27T21:08:52.787Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
+        "list": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
+        "view": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
         "create": "",
-        "update": "id = @request.auth.id",
+        "update": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
         "delete": "id = @request.auth.id"
       },
       "fields": [
@@ -56,6 +56,32 @@
           "required": false,
           "system": false,
           "collectionRef": "specialties"
+        },
+        {
+          "name": "council_type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["CRM", "CRN", "CRP", "CRO", "COREN", "CREFITO"]
+        },
+        {
+          "name": "council_number",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "council_approved",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["doctor", "admin"]
         }
       ],
       "indexes": [
@@ -315,6 +341,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "ai_alerts",
+          "type": "json",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": []
@@ -467,6 +499,24 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "indications",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "contraindications",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "interactions",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_medications_name ON medications (name)"]

@@ -22,7 +22,7 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { getSpecialties } from '@/services/specialties'
-import { Specialty } from '@/types/clinical'
+import { Specialty, CouncilType } from '@/types/clinical'
 
 export default function Register() {
   const { signUp } = useAuth()
@@ -33,6 +33,8 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [specialtyId, setSpecialtyId] = useState('')
+  const [councilType, setCouncilType] = useState<CouncilType>('CRM')
+  const [councilNumber, setCouncilNumber] = useState('')
   const [lgpdAccepted, setLgpdAccepted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -57,6 +59,8 @@ export default function Register() {
       email,
       password,
       specialty: specialtyId || undefined,
+      councilType,
+      councilNumber,
     })
     setLoading(false)
     if (err) {
@@ -100,30 +104,47 @@ export default function Register() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-xs">CRM e UF</Label>
-                <Input
-                  placeholder="123456-SP"
-                  value={crm}
-                  onChange={(e) => setCrm(e.target.value)}
-                  className="h-8 text-xs mt-1"
-                  required
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Especialidade Médica</Label>
-                <Select value={specialtyId} onValueChange={setSpecialtyId}>
+                <Label className="text-xs">Tipo de Conselho</Label>
+                <Select value={councilType} onValueChange={(v) => setCouncilType(v as CouncilType)}>
                   <SelectTrigger className="h-8 text-xs mt-1">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {specialties.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
+                    {(['CRM', 'CRN', 'CRP', 'CRO', 'COREN', 'CREFITO'] as CouncilType[]).map(
+                      (c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label className="text-xs">Número do Conselho</Label>
+                <Input
+                  placeholder="123456-SP"
+                  value={councilNumber}
+                  onChange={(e) => setCouncilNumber(e.target.value)}
+                  className="h-8 text-xs mt-1"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Especialidade</Label>
+              <Select value={specialtyId} onValueChange={setSpecialtyId}>
+                <SelectTrigger className="h-8 text-xs mt-1">
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {specialties.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

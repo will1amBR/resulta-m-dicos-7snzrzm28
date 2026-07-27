@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Stethoscope,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -37,6 +38,7 @@ export function SidebarNav() {
     { to: '/teleconsulta', label: 'Teleconsulta', icon: Video },
     { to: '/prontuario', label: 'Prontuário', icon: FileText },
     { to: '/documentos', label: 'Documentos', icon: FolderOpen },
+    { to: '/admin/councils', label: 'Aprovações', icon: ShieldCheck },
   ]
 
   const handleSignOut = () => {

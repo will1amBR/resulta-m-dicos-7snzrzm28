@@ -115,6 +115,28 @@
   }
 }
 
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    font-size: 12pt;
+    margin: 1cm;
+    background: white !important;
+  }
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
 @layer utilities {
   /* KEEP ALL THE ANIMATIONS CLASSES THAT ARE USED BELOW */
   @keyframes accordion-down {

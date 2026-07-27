@@ -11,6 +11,8 @@ interface AuthContextType {
     crm: string
     specialty?: string
     cpfCnpj?: string
+    councilType?: string
+    councilNumber?: string
   }) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => void
@@ -68,6 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     crm: string
     specialty?: string
     cpfCnpj?: string
+    councilType?: string
+    councilNumber?: string
   }) => {
     try {
       await pb.collection('users').create({
@@ -78,6 +82,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         crm: data.crm,
         specialty: data.specialty,
         cpf_cnpj: data.cpfCnpj,
+        council_type: data.councilType,
+        council_number: data.councilNumber,
       })
       await pb.collection('users').authWithPassword(data.email, data.password)
       return { error: null }

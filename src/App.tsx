@@ -14,6 +14,7 @@ import Prontuario from './pages/Prontuario'
 import Teleconsulta from './pages/Teleconsulta'
 import Documentos from './pages/Documentos'
 import Settings from './pages/Settings'
+import AdminCouncils from './pages/AdminCouncils'
 import NotFound from './pages/NotFound'
 
 const App = () => (
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/teleconsulta" element={<Teleconsulta />} />
             <Route path="/documentos" element={<Documentos />} />
             <Route path="/configuracoes" element={<Settings />} />
+            <Route path="/admin/councils" element={<AdminCouncils />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

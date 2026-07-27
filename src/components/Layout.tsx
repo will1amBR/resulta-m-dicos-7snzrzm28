@@ -29,22 +29,27 @@ export default function Layout() {
   return (
     <ActivePatientProvider>
       <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
-        <div className="hidden md:flex shrink-0">
+        <div className="hidden md:flex shrink-0 no-print">
           <SidebarNav />
         </div>
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="p-0 bg-slate-900 border-slate-800 w-64 text-white">
+          <SheetContent
+            side="left"
+            className="p-0 bg-slate-900 border-slate-800 w-64 text-white no-print"
+          >
             <SidebarNav />
           </SheetContent>
         </Sheet>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+          <div className="no-print">
+            <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+          </div>
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <Outlet />
           </main>
-          <footer className="h-8 border-t bg-white px-4 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+          <footer className="no-print h-8 border-t bg-white px-4 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
             <span>Resulta Médicos © 2025 - Plataforma Unificada de Gestão Clínica</span>
             <span>Conforme LGPD & Regulamentações CFM</span>
           </footer>
