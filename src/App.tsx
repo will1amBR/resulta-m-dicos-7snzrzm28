@@ -4,6 +4,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/hooks/use-auth'
 import Layout from './components/Layout'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
@@ -24,11 +25,11 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/entrar" element={<Login />} />
           <Route path="/cadastro" element={<Register />} />
 
           <Route element={<Layout />}>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/pacientes" element={<Pacientes />} />
