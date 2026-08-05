@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { SidebarNav } from '@/components/SidebarNav'
+import { ClinicSidebar } from '@/components/ClinicSidebar'
+import { PatientSidebar } from '@/components/PatientSidebar'
 import { Header } from '@/components/Header'
 import { useAuth } from '@/hooks/use-auth'
 import { ActivePatientProvider } from '@/contexts/active-patient-context'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 
 export default function Layout() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, userRole } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
 
@@ -26,11 +28,14 @@ export default function Layout() {
     return <Navigate to="/entrar" replace />
   }
 
+  const Sidebar =
+    userRole === 'patient' ? PatientSidebar : userRole === 'clinic' ? ClinicSidebar : SidebarNav
+
   return (
     <ActivePatientProvider>
       <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
         <div className="hidden md:flex shrink-0 no-print">
-          <SidebarNav />
+          <Sidebar />
         </div>
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -38,13 +43,13 @@ export default function Layout() {
             side="left"
             className="p-0 bg-slate-900 border-slate-800 w-64 text-white no-print"
           >
-            <SidebarNav />
+            <Sidebar />
           </SheetContent>
         </Sheet>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <div className="no-print">
-            <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+            <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} role={userRole} />
           </div>
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <Outlet />

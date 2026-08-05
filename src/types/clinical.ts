@@ -91,6 +91,15 @@ export interface Medication {
 
 export type CouncilType = 'CRM' | 'CRN' | 'CRP' | 'CRO' | 'COREN' | 'CREFITO'
 
+export type UserRole = 'doctor' | 'clinic' | 'patient' | 'admin'
+
+export interface ClinicStats {
+  doctorCount: number
+  todayAppointmentCount: number
+  scheduledCount: number
+  patientCount: number
+}
+
 export interface MedicationAlert {
   medication: string
   severity: 'high' | 'medium' | 'none'

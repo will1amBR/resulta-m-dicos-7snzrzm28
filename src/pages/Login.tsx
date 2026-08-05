@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Stethoscope, ArrowRight, Lock, Mail } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,7 +32,8 @@ export default function Login() {
     if (err) {
       setError('E-mail ou senha incorretos. Tente novamente.')
     } else {
-      navigate('/dashboard')
+      const role = (pb.authStore.record as any)?.role || 'doctor'
+      navigate(role === 'clinic' ? '/clinic' : role === 'patient' ? '/patient' : '/dashboard')
     }
   }
 

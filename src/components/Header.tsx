@@ -9,7 +9,13 @@ import { getPatients } from '@/services/patients'
 import { Patient } from '@/types/clinical'
 import { useNavigate } from 'react-router-dom'
 
-export function Header({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) {
+export function Header({
+  onOpenMobileMenu,
+  role = 'doctor',
+}: {
+  onOpenMobileMenu?: () => void
+  role?: string
+}) {
   const { activePatient, setActivePatient } = useActivePatient()
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<Patient[]>([])
@@ -40,53 +46,62 @@ export function Header({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onOpenMobileMenu}>
           <Menu className="h-5 w-5 text-slate-700" />
         </Button>
-        <div className="relative w-64 md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            type="text"
-            placeholder="Buscar paciente por nome ou CPF..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-4 h-9 text-sm bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
-          />
-          {isOpenSearch && searchResults.length > 0 && (
-            <div className="absolute top-11 left-0 right-0 bg-white border rounded-md shadow-lg z-50 py-1">
-              {searchResults.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    setActivePatient(p)
-                    setIsOpenSearch(false)
-                    setSearchTerm('')
-                    navigate('/dashboard')
-                  }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 flex items-center justify-between border-b last:border-0"
-                >
-                  <div>
-                    <p className="font-medium text-slate-900">{p.name}</p>
-                    <p className="text-xs text-slate-500">CPF: {p.cpf}</p>
-                  </div>
-                  {p.insurance && (
-                    <Badge variant="outline" className="text-xs">
-                      {p.insurance}
-                    </Badge>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {role !== 'patient' && (
+          <div className="relative w-64 md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="Buscar paciente por nome ou CPF..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 h-9 text-sm bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
+            />
+            {isOpenSearch && searchResults.length > 0 && (
+              <div className="absolute top-11 left-0 right-0 bg-white border rounded-md shadow-lg z-50 py-1">
+                {searchResults.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setActivePatient(p)
+                      setIsOpenSearch(false)
+                      setSearchTerm('')
+                      navigate('/dashboard')
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 flex items-center justify-between border-b last:border-0"
+                  >
+                    <div>
+                      <p className="font-medium text-slate-900">{p.name}</p>
+                      <p className="text-xs text-slate-500">CPF: {p.cpf}</p>
+                    </div>
+                    {p.insurance && (
+                      <Badge variant="outline" className="text-xs">
+                        {p.insurance}
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {role === 'patient' && (
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <User className="h-4 w-4 text-slate-400" />
+            <span className="font-medium">Portal do Paciente</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
-        {activePatient ? (
+        {role !== 'patient' && activePatient && (
           <div className="hidden sm:flex items-center gap-2 bg-blue-50 border border-blue-200 px-3 py-1 rounded-full text-xs text-blue-800">
             <UserCheck className="h-3.5 w-3.5 text-blue-600" />
             <span>
-              Consulta em andamento: <strong>{activePatient.name}</strong>
+              Consulta: <strong>{activePatient.name}</strong>
             </span>
           </div>
-        ) : (
+        )}
+        {role !== 'patient' && !activePatient && (
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
             <User className="h-3.5 w-3.5" />
             <span>Nenhum paciente selecionado</span>
