@@ -16,12 +16,13 @@ import {
 } from '@/components/ui/card'
 
 export default function Login() {
-  const { signIn } = useAuth()
+  const { signIn, demoSignIn } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('william@korenambiental.com')
   const [password, setPassword] = useState('Skip@Pass')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +34,17 @@ export default function Login() {
       setError('E-mail ou senha incorretos. Tente novamente.')
     } else {
       const role = (pb.authStore.record as any)?.role || 'doctor'
+      navigate(role === 'clinic' ? '/clinic' : role === 'patient' ? '/patient' : '/dashboard')
+    }
+  }
+
+  const handleDemo = async (role: 'doctor' | 'clinic' | 'patient') => {
+    setDemoLoading(role)
+    const { error: err } = await demoSignIn(role)
+    setDemoLoading(null)
+    if (err) {
+      setError('Conta demo indisponível. Tente novamente.')
+    } else {
       navigate(role === 'clinic' ? '/clinic' : role === 'patient' ? '/patient' : '/dashboard')
     }
   }
@@ -100,6 +112,48 @@ export default function Login() {
               {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </form>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400">ou</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs text-center text-slate-500 font-medium">Entrar como demo</p>
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={demoLoading === 'doctor'}
+                onClick={() => handleDemo('doctor')}
+                className="w-full border-blue-200 hover:bg-blue-50 text-xs"
+              >
+                {demoLoading === 'doctor' ? 'Entrando...' : 'Sou médico (demo)'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={demoLoading === 'clinic'}
+                onClick={() => handleDemo('clinic')}
+                className="w-full border-emerald-200 hover:bg-emerald-50 text-xs"
+              >
+                {demoLoading === 'clinic' ? 'Entrando...' : 'Sou clínica (demo)'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={demoLoading === 'patient'}
+                onClick={() => handleDemo('patient')}
+                className="w-full border-violet-200 hover:bg-violet-50 text-xs"
+              >
+                {demoLoading === 'patient' ? 'Entrando...' : 'Sou paciente (demo)'}
+              </Button>
+            </div>
+          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-2 text-center text-xs text-slate-500 border-t pt-4">

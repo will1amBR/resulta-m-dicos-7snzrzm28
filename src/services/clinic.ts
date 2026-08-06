@@ -34,11 +34,9 @@ export const getClinicStats = async (): Promise<ClinicStats> => {
   const todayStr = new Date().toISOString().slice(0, 10)
   const [doctors, todayAppts, scheduledAppts, patients] = await Promise.all([
     pb.collection('users').getFullList({ filter: 'role = "doctor"' }),
-    pb
-      .collection('appointments')
-      .getFullList({
-        filter: `date_time >= "${todayStr} 00:00:00" && date_time <= "${todayStr} 23:59:59"`,
-      }),
+    pb.collection('appointments').getFullList({
+      filter: `date_time >= "${todayStr} 00:00:00" && date_time <= "${todayStr} 23:59:59"`,
+    }),
     pb.collection('appointments').getFullList({ filter: 'status = "agendada"' }),
     pb.collection('patients').getFullList({}),
   ])

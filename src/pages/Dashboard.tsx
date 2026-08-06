@@ -10,6 +10,7 @@ import {
   Save,
   FileText,
   Folder,
+  Printer,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useActivePatient } from '@/contexts/active-patient-context'
@@ -26,7 +27,11 @@ import {
   DocumentItem,
   PrescribedMedication,
   CidCode,
+  MedicationAlert,
 } from '@/types/clinical'
+import { MedicationAlerts } from '@/components/MedicationAlerts'
+import { analyzeMedications } from '@/services/medications'
+import { ProntuarioPrintView } from '@/components/ProntuarioPrintView'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -53,6 +58,8 @@ export default function Dashboard() {
   const [cidList, setCidList] = useState<CidCode[]>([])
   const [medList, setMedList] = useState<PrescribedMedication[]>([])
   const [savingRecord, setSavingRecord] = useState(false)
+  const [medAlerts, setMedAlerts] = useState<MedicationAlert[]>([])
+  const [alertsLoading, setAlertsLoading] = useState(false)
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [apptModalOpen, setApptModalOpen] = useState(false)
@@ -79,6 +86,10 @@ export default function Dashboard() {
   }, [user])
 
   useRealtime('appointments', () => {
+    loadAppointments()
+  })
+
+  useRealtime('medical_records', () => {
     loadAppointments()
   })
 
@@ -118,6 +129,22 @@ export default function Dashboard() {
       .then(setDocuments)
       .catch(() => {})
   }, [activePatient])
+
+  useEffect(() => {
+    if (!activePatient || cidList.length === 0 || medList.length === 0) {
+      setMedAlerts([])
+      return
+    }
+    setAlertsLoading(true)
+    analyzeMedications({
+      patient: activePatient.id,
+      cid10_codes: cidList,
+      prescribed_medications: medList,
+    })
+      .then((res: any) => setMedAlerts(res.alerts || []))
+      .catch(() => setMedAlerts([]))
+      .finally(() => setAlertsLoading(false))
+  }, [cidList, medList, activePatient])
 
   const handleSaveRecord = async () => {
     if (!activePatient || !user) return
@@ -178,14 +205,20 @@ export default function Dashboard() {
         </div>
 
         {activePatient && (
-          <Button
-            onClick={handleFinishConsultation}
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            <CheckCircle className="h-4 w-4 mr-1.5" />
-            Finalizar Consulta
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => window.print()} size="sm" variant="outline" className="no-print">
+              <Printer className="h-4 w-4 mr-1.5" />
+              Exportar Prontuário (PDF)
+            </Button>
+            <Button
+              onClick={handleFinishConsultation}
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white no-print"
+            >
+              <CheckCircle className="h-4 w-4 mr-1.5" />
+              Finalizar Consulta
+            </Button>
+          </div>
         )}
       </div>
 
@@ -355,6 +388,11 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
+                {(cidList.length > 0 || medList.length > 0) && (
+                  <div className="border-t pt-2">
+                    <MedicationAlerts alerts={medAlerts} loading={alertsLoading} />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -463,6 +501,28 @@ export default function Dashboard() {
         onOpenChange={setApptModalOpen}
         onSuccess={loadAppointments}
       />
+
+      {activePatient && (subjective || objective || assessment || plan) && (
+        <ProntuarioPrintView
+          record={
+            {
+              id: currentRecord?.id || '',
+              patient: activePatient.id,
+              doctor: user?.id || '',
+              soap_subjective: subjective,
+              soap_objective: objective,
+              soap_assessment: assessment,
+              soap_plan: plan,
+              cid10_codes: cidList,
+              prescribed_medications: medList,
+              procedures: currentRecord?.procedures,
+              created: currentRecord?.created,
+            } as MedicalRecord
+          }
+          patient={activePatient}
+          doctor={user}
+        />
+      )}
     </div>
   )
 }

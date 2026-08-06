@@ -7,6 +7,7 @@ import { Header } from '@/components/Header'
 import { useAuth } from '@/hooks/use-auth'
 import { ActivePatientProvider } from '@/contexts/active-patient-context'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { DemoBanner } from '@/components/DemoBanner'
 
 export default function Layout() {
   const { isAuthenticated, loading, userRole } = useAuth()
@@ -48,6 +49,7 @@ export default function Layout() {
         </Sheet>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <DemoBanner />
           <div className="no-print">
             <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} role={userRole} />
           </div>

@@ -23,8 +23,10 @@ interface AuthContextType {
   user: any
   isAuthenticated: boolean
   userRole: string
+  isDemoMode: boolean
   signUp: (data: SignUpData) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
+  demoSignIn: (role: 'doctor' | 'clinic' | 'patient') => Promise<{ error: any }>
   signOut: () => void
   loading: boolean
   refreshUser: () => Promise<void>
@@ -42,6 +44,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(pb.authStore.isValid ? pb.authStore.record : null)
   const [isAuthenticated, setIsAuthenticated] = useState(pb.authStore.isValid)
   const [loading, setLoading] = useState(true)
+  const [isDemoMode, setIsDemoMode] = useState(
+    typeof localStorage !== 'undefined' && localStorage.getItem('demoMode') === 'true',
+  )
 
   const refreshUser = async () => {
     if (pb.authStore.isValid) {
@@ -131,15 +136,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const demoSignIn = async (role: 'doctor' | 'clinic' | 'patient') => {
+    const demoCreds = {
+      doctor: { email: 'demo.medico@resulta.med', password: 'Skip@Pass' },
+      clinic: { email: 'demo.clinica@resulta.med', password: 'Skip@Pass' },
+      patient: { email: 'demo.paciente@resulta.med', password: 'Skip@Pass' },
+    }
+    try {
+      const cred = demoCreds[role]
+      await pb.collection('users').authWithPassword(cred.email, cred.password)
+      localStorage.setItem('demoMode', 'true')
+      setIsDemoMode(true)
+      return { error: null }
+    } catch (error) {
+      return { error }
+    }
+  }
+
   const signOut = () => {
     pb.authStore.clear()
+    localStorage.removeItem('demoMode')
+    setIsDemoMode(false)
   }
 
   const userRole = user?.role || 'doctor'
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, userRole, signUp, signIn, signOut, loading, refreshUser }}
+      value={{
+        user,
+        isAuthenticated,
+        userRole,
+        isDemoMode,
+        signUp,
+        signIn,
+        demoSignIn,
+        signOut,
+        loading,
+        refreshUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
