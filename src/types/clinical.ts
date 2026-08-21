@@ -130,12 +130,15 @@ export interface PrescriptionRecord {
   patient_id: string
   doctor_id: string
   medications: PrescriptionItem[]
-  status: 'emitida' | 'enviada' | 'cancelada'
+  status: 'emitida' | 'enviada' | 'aguardando_renovacao' | 'cancelada' | 'rejeitada'
   certificate_validated: boolean
   sent_via?: PrescriptionSendMethod
   sent_at?: string
   notes?: string
   ai_alerts?: MedicationAlert[]
+  renewal_requested_at?: string
+  renewal_justification?: string
+  renewal_patient_notes?: string
   created?: string
   updated?: string
   expand?: {

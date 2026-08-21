@@ -119,15 +119,20 @@ export default function PatientDetail() {
               documents.map((d) => (
                 <div
                   key={d.id}
-                  className="p-2 border rounded-md flex justify-between items-center bg-slate-50"
+                  className="p-2.5 border rounded-md flex justify-between items-center bg-slate-50 gap-2 min-w-0"
                 >
-                  <div>
-                    <p className="font-medium text-slate-900">{d.name}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900 truncate" title={d.name}>
+                      {d.name}
+                    </p>
                     <span className="text-[10px] capitalize text-slate-500">Pasta: {d.folder}</span>
                   </div>
                   {d.ai_classified && (
-                    <Badge variant="secondary" className="text-[9px]">
-                      Classificado por IA
+                    <Badge
+                      variant="secondary"
+                      className="text-[9px] shrink-0 bg-amber-50 text-amber-800 border-amber-200"
+                    >
+                      IA
                     </Badge>
                   )}
                 </div>

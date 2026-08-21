@@ -21,6 +21,7 @@ export function ClinicSidebar() {
     { to: '/clinic/equipe', label: 'Equipe Médica', icon: UserCog },
     { to: '/clinic/agenda', label: 'Agenda', icon: Calendar },
     { to: '/clinic/pacientes', label: 'Pacientes', icon: Users },
+    { to: '/admin/councils', label: 'Aprovações & Secretaria', icon: Stethoscope },
     { to: '/clinic/configuracoes', label: 'Configurações', icon: Settings },
   ]
 

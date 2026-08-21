@@ -1,10 +1,26 @@
 import { useState, useEffect } from 'react'
-import { FolderOpen, Upload, Sparkles, FileText, Trash2 } from 'lucide-react'
+import {
+  FolderOpen,
+  Upload,
+  Sparkles,
+  FileText,
+  Trash2,
+  Download,
+  Eye,
+  Search,
+  Filter,
+  FileUp,
+  Clock,
+  Calendar,
+  User,
+} from 'lucide-react'
 import { useActivePatient } from '@/contexts/active-patient-context'
 import { getDocumentsForPatient, deleteDocument, updateDocumentFolder } from '@/services/documents'
-import { DocumentItem, DocumentFolder } from '@/types/clinical'
+import { getPatients } from '@/services/patients'
+import { DocumentItem, DocumentFolder, Patient } from '@/types/clinical'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectTrigger,
@@ -12,21 +28,52 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { DocumentUploadModal } from '@/components/DocumentUploadModal'
+import { useToast } from '@/hooks/use-toast'
+import pb from '@/lib/pocketbase/client'
 
 export default function Documentos() {
-  const { activePatient } = useActivePatient()
+  const { activePatient, setActivePatient } = useActivePatient()
+  const { toast } = useToast()
   const [documents, setDocuments] = useState<DocumentItem[]>([])
   const [selectedFolder, setSelectedFolder] = useState<string>('todos')
+  const [searchQuery, setSearchQuery] = useState('')
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [loadingDocs, setLoadingDocs] = useState(false)
+
+  // Patient selector fallback
+  const [allPatients, setAllPatients] = useState<Patient[]>([])
+  const [selectedDocPreview, setSelectedDocPreview] = useState<DocumentItem | null>(null)
+
+  useEffect(() => {
+    getPatients()
+      .then((list) => {
+        setAllPatients(list)
+        if (!activePatient && list.length > 0) {
+          setActivePatient(list[0])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const loadDocs = async () => {
     if (!activePatient) return
+    setLoadingDocs(true)
     try {
       const list = await getDocumentsForPatient(activePatient.id, selectedFolder)
       setDocuments(list)
     } catch {
-      /* intentionally ignored */
+      setDocuments([])
+    } finally {
+      setLoadingDocs(false)
     }
   }
 
@@ -34,133 +81,380 @@ export default function Documentos() {
     loadDocs()
   }, [activePatient, selectedFolder])
 
-  const handleDelete = async (id: string) => {
-    await deleteDocument(id)
-    loadDocs()
+  const handleDelete = async (id: string, name: string) => {
+    if (confirm(`Deseja realmente remover o documento "${name}"?`)) {
+      await deleteDocument(id)
+      toast({ title: 'Documento excluído com sucesso' })
+      loadDocs()
+    }
   }
 
   const handleFolderChange = async (id: string, folder: DocumentFolder) => {
     await updateDocumentFolder(id, folder)
+    toast({ title: 'Pasta atualizada com sucesso' })
     loadDocs()
   }
 
+  const getFileUrl = (doc: DocumentItem) => {
+    if (!doc.file) return null
+    return pb.files.getURL(doc as any, doc.file)
+  }
+
+  const filteredDocs = documents.filter((doc) => {
+    if (!searchQuery.trim()) return true
+    return doc.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  })
+
   if (!activePatient) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-white border rounded-lg shadow-subtle">
-        <FolderOpen className="h-12 w-12 text-slate-300 mb-3" />
-        <h2 className="font-bold text-slate-800 text-base">Selecione um Paciente</h2>
-        <p className="text-xs text-slate-500 max-w-sm mt-1">
-          Selecione um paciente para visualizar e organizar seus exames, medicamentos e atestados.
-        </p>
+      <div className="w-full max-w-4xl mx-auto space-y-4">
+        <div className="flex flex-col items-center justify-center text-center p-12 bg-white border border-slate-200 rounded-2xl shadow-subtle space-y-4">
+          <div className="h-16 w-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <FolderOpen className="h-8 w-8" />
+          </div>
+          <div>
+            <h2 className="font-bold text-slate-900 text-lg">Selecione um Paciente</h2>
+            <p className="text-xs text-slate-500 max-w-md mt-1">
+              Escolha um paciente para visualizar, organizar em pastas e enviar exames, receitas e
+              atestados com classificação automática por IA.
+            </p>
+          </div>
+          {allPatients.length > 0 && (
+            <div className="w-full max-w-xs pt-2">
+              <Select
+                onValueChange={(pId) => {
+                  const found = allPatients.find((p) => p.id === pId)
+                  if (found) setActivePatient(found)
+                }}
+              >
+                <SelectTrigger className="text-xs h-10">
+                  <SelectValue placeholder="Selecionar paciente da lista..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allPatients.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} ({p.cpf})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border shadow-subtle">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-            <FolderOpen className="h-5 w-5 text-blue-600" />
-            Gestão de Documentos e IA
-          </h1>
-          <p className="text-xs text-slate-500">
-            Documentos de <strong>{activePatient.name}</strong> organizados automaticamente.
-          </p>
+    <div className="w-full max-w-6xl mx-auto space-y-5 pb-12 overflow-hidden">
+      {/* Header Banner */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+            <FolderOpen className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2 truncate">
+              Gestão de Documentos do Paciente
+            </h1>
+            <p className="text-xs text-slate-500 truncate">
+              Paciente ativo:{' '}
+              <strong className="text-slate-800 font-semibold">{activePatient.name}</strong>
+              {activePatient.cpf && ` (CPF: ${activePatient.cpf})`}
+            </p>
+          </div>
         </div>
 
-        <Button
-          onClick={() => setUploadOpen(true)}
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Upload className="h-4 w-4 mr-1" /> Anexar Novo Documento
-        </Button>
-      </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Seletor rápido de paciente */}
+          {allPatients.length > 1 && (
+            <Select
+              value={activePatient.id}
+              onValueChange={(pId) => {
+                const found = allPatients.find((p) => p.id === pId)
+                if (found) setActivePatient(found)
+              }}
+            >
+              <SelectTrigger className="h-9 text-xs w-44 hidden md:flex">
+                <SelectValue placeholder="Trocar paciente" />
+              </SelectTrigger>
+              <SelectContent>
+                {allPatients.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
-      <div className="flex gap-2 text-xs overflow-x-auto pb-1">
-        {['todos', 'exames', 'medicamentos', 'procedimentos', 'agendamentos', 'outros'].map((f) => (
           <Button
-            key={f}
-            variant={selectedFolder === f ? 'default' : 'outline'}
+            onClick={() => setUploadOpen(true)}
             size="sm"
-            onClick={() => setSelectedFolder(f)}
-            className="capitalize text-xs h-8"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 px-3.5 shadow-sm"
           >
-            {f}
+            <Upload className="h-4 w-4 mr-1.5" /> Anexar Documento
           </Button>
-        ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {documents.length === 0 ? (
-          <div className="col-span-full bg-white p-8 text-center text-xs text-slate-400 border rounded-lg">
-            Nenhum documento encontrado nesta pasta.
+      {/* Filter and Search Bar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        {/* Folders scroll */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {[
+            { id: 'todos', label: 'Todos' },
+            { id: 'exames', label: 'Exames' },
+            { id: 'medicamentos', label: 'Medicamentos' },
+            { id: 'procedimentos', label: 'Procedimentos' },
+            { id: 'agendamentos', label: 'Agendamentos' },
+            { id: 'outros', label: 'Outros' },
+          ].map((f) => (
+            <Button
+              key={f.id}
+              variant={selectedFolder === f.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedFolder(f.id)}
+              className="capitalize text-xs h-8 px-3 whitespace-nowrap shrink-0"
+            >
+              {f.label}
+              {f.id === 'todos' && documents.length > 0 && (
+                <span className="ml-1.5 text-[10px] opacity-75">({documents.length})</span>
+              )}
+            </Button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full md:w-64 shrink-0">
+          <Search className="h-3.5 w-3.5 absolute left-3 top-2.5 text-slate-400" />
+          <Input
+            placeholder="Buscar documento..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 h-8 text-xs"
+          />
+        </div>
+      </div>
+
+      {/* Document Grid */}
+      <div className="w-full">
+        {loadingDocs ? (
+          <div className="flex items-center justify-center py-16 bg-white border border-slate-200 rounded-xl">
+            <div className="h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filteredDocs.length === 0 ? (
+          <div className="bg-white p-12 text-center text-xs text-slate-400 border border-dashed border-slate-300 rounded-2xl space-y-3">
+            <div className="h-12 w-12 rounded-full bg-slate-50 text-slate-400 mx-auto flex items-center justify-center">
+              <FileText className="h-6 w-6" />
+            </div>
+            <p className="font-semibold text-slate-700 text-sm">Nenhum documento nesta pasta</p>
+            <p className="text-slate-400 max-w-sm mx-auto">
+              Anexe exames laboratoriais, relatórios médicos ou prescrições para este paciente.
+            </p>
+            <Button
+              size="sm"
+              onClick={() => setUploadOpen(true)}
+              className="bg-blue-600 text-white text-xs mt-2"
+            >
+              <Upload className="h-3.5 w-3.5 mr-1" /> Anexar Primeiro Documento
+            </Button>
           </div>
         ) : (
-          documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="bg-white border rounded-lg p-3 space-y-2 shadow-subtle flex flex-col justify-between"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-blue-700 font-bold text-xs">
-                    <FileText className="h-4 w-4" />
-                    <span className="truncate max-w-[150px]">{doc.name}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredDocs.map((doc) => {
+              const fileUrl = getFileUrl(doc)
+              const dtFormatted = doc.created
+                ? new Date(doc.created).toLocaleDateString('pt-BR')
+                : 'Hoje'
+
+              return (
+                <div
+                  key={doc.id}
+                  className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 shadow-subtle hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group min-w-0"
+                >
+                  {/* Top content */}
+                  <div className="space-y-3 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-semibold capitalize bg-slate-100 text-slate-700 truncate max-w-[120px]"
+                      >
+                        {doc.folder}
+                      </Badge>
+                      {doc.ai_classified && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200/80 flex items-center gap-1 shrink-0"
+                        >
+                          <Sparkles className="h-2.5 w-2.5 text-amber-600" /> Classificado por IA
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-start gap-3 min-w-0 pt-1">
+                      <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <FileText className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3
+                          className="font-bold text-xs text-slate-900 truncate leading-snug"
+                          title={doc.name}
+                        >
+                          {doc.name}
+                        </h3>
+                        <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> {dtFormatted}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  {doc.ai_classified && (
-                    <Badge
-                      variant="secondary"
-                      className="text-[9px] bg-amber-50 text-amber-800 border-amber-200"
-                    >
-                      <Sparkles className="h-2.5 w-2.5 mr-1 text-amber-500" /> IA
-                    </Badge>
-                  )}
+
+                  {/* Bottom Actions */}
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 gap-2 min-w-0">
+                    <div className="flex-1 min-w-0">
+                      <Select
+                        value={doc.folder}
+                        onValueChange={(val) => handleFolderChange(doc.id, val as DocumentFolder)}
+                      >
+                        <SelectTrigger className="h-7 text-[10px] w-full max-w-[120px] bg-slate-50 border-slate-200">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="exames">Exames</SelectItem>
+                          <SelectItem value="medicamentos">Medicamentos</SelectItem>
+                          <SelectItem value="procedimentos">Procedimentos</SelectItem>
+                          <SelectItem value="agendamentos">Agendamentos</SelectItem>
+                          <SelectItem value="outros">Outros</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setSelectedDocPreview(doc)}
+                        className="h-7 w-7 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        title="Visualizar documento"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          if (fileUrl) {
+                            window.open(fileUrl, '_blank')
+                          } else {
+                            toast({
+                              title: 'Download iniciado',
+                              description: `Baixando documento ${doc.name}...`,
+                            })
+                          }
+                        }}
+                        className="h-7 w-7 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        title="Baixar arquivo"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDelete(doc.id, doc.name)}
+                        className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        title="Excluir documento"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-
-                <p className="text-[10px] text-slate-400">
-                  Data: {doc.created ? new Date(doc.created).toLocaleDateString('pt-BR') : 'Hoje'}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t text-xs">
-                <Select
-                  value={doc.folder}
-                  onValueChange={(val) => handleFolderChange(doc.id, val as DocumentFolder)}
-                >
-                  <SelectTrigger className="h-7 text-[10px] w-28">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="exames">Exames</SelectItem>
-                    <SelectItem value="medicamentos">Medicamentos</SelectItem>
-                    <SelectItem value="procedimentos">Procedimentos</SelectItem>
-                    <SelectItem value="agendamentos">Agendamentos</SelectItem>
-                    <SelectItem value="outros">Outros</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleDelete(doc.id)}
-                  className="h-7 w-7 text-red-500 hover:bg-red-50"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))
+              )
+            })}
+          </div>
         )}
       </div>
 
+      {/* Modal de Upload */}
       <DocumentUploadModal
         open={uploadOpen}
         onOpenChange={setUploadOpen}
         patientId={activePatient.id}
         onSuccess={loadDocs}
       />
+
+      {/* Modal de Pré-Visualização */}
+      {selectedDocPreview && (
+        <Dialog open={!!selectedDocPreview} onOpenChange={() => setSelectedDocPreview(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2 truncate">
+                <FileText className="h-5 w-5 text-blue-600 shrink-0" />
+                <span className="truncate">{selectedDocPreview.name}</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs">
+                Paciente: <strong>{activePatient.name}</strong>
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-2 text-xs">
+              <div className="p-3 bg-slate-50 border rounded-lg space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Pasta Destino:</span>
+                  <span className="font-semibold capitalize text-slate-800">
+                    {selectedDocPreview.folder}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Data de Envio:</span>
+                  <span className="font-semibold text-slate-800">
+                    {selectedDocPreview.created
+                      ? new Date(selectedDocPreview.created).toLocaleString('pt-BR')
+                      : 'Recente'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Classificação por IA:</span>
+                  <span className="font-semibold text-slate-800">
+                    {selectedDocPreview.ai_classified ? 'Sim (Inteligente)' : 'Manual'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDocPreview(null)}
+                className="text-xs"
+              >
+                Fechar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const url = getFileUrl(selectedDocPreview)
+                  if (url) {
+                    window.open(url, '_blank')
+                  } else {
+                    toast({
+                      title: 'Download',
+                      description: `Baixando documento ${selectedDocPreview.name}...`,
+                    })
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
+              >
+                <Download className="h-3.5 w-3.5 mr-1" /> Abrir / Baixar Arquivo
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

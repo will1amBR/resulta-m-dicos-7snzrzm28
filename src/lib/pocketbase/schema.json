@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T04:36:32.517Z",
+  "generatedAt": "2026-08-21T05:21:40.667Z",
   "collections": [
     {
       "name": "users",
@@ -589,7 +589,7 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["emitida", "enviada", "cancelada"]
+          "selectValues": ["emitida", "enviada", "aguardando_renovacao", "cancelada", "rejeitada"]
         },
         {
           "name": "certificate_validated",
@@ -635,6 +635,24 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "renewal_requested_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "renewal_justification",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "renewal_patient_notes",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [

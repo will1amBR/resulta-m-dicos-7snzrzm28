@@ -464,11 +464,11 @@ export default function Dashboard() {
                               {folderDocs.map((doc) => (
                                 <div
                                   key={doc.id}
-                                  className="text-[10px] text-slate-600 truncate flex items-center justify-between"
+                                  className="text-[10px] text-slate-600 flex items-center justify-between gap-1.5 min-w-0"
                                 >
-                                  <span>{doc.name}</span>
+                                  <span className="truncate flex-1 min-w-0">{doc.name}</span>
                                   {doc.ai_classified && (
-                                    <Badge className="text-[8px] bg-amber-100 text-amber-800 hover:bg-amber-100 px-1 py-0">
+                                    <Badge className="text-[8px] bg-amber-100 text-amber-800 hover:bg-amber-100 px-1 py-0 shrink-0">
                                       IA
                                     </Badge>
                                   )}

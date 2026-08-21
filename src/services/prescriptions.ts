@@ -79,14 +79,30 @@ export const createPrescription = async (
 export const updatePrescriptionStatus = async (
   id: string,
   data: {
-    status?: 'emitida' | 'enviada' | 'cancelada'
+    status?: 'emitida' | 'enviada' | 'aguardando_renovacao' | 'cancelada' | 'rejeitada'
     sent_via?: 'email' | 'whatsapp' | 'sms' | 'nenhum'
     sent_at?: string
+    renewal_justification?: string
+    notes?: string
   },
 ): Promise<PrescriptionRecord> => {
   return await pb.collection('prescriptions').update<PrescriptionRecord>(id, data, {
     expand: 'patient_id,doctor_id',
   })
+}
+
+export const getPendingRenewalPrescriptions = async (): Promise<PrescriptionRecord[]> => {
+  try {
+    const list = await pb.collection('prescriptions').getFullList<PrescriptionRecord>({
+      filter: 'status = "aguardando_renovacao"',
+      sort: '-renewal_requested_at,-created',
+      expand: 'patient_id,doctor_id',
+    })
+    return list
+  } catch (error) {
+    console.error('Erro ao buscar receitas para renovação:', error)
+    return []
+  }
 }
 
 export const sendPrescriptionEmail = async (params: {

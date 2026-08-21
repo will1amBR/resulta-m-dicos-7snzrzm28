@@ -120,7 +120,7 @@ const App = () => (
             <Route
               path="/admin/councils"
               element={
-                <RoleGuard allow={['doctor', 'admin']}>
+                <RoleGuard allow={['doctor', 'clinic', 'admin']}>
                   <AdminCouncils />
                 </RoleGuard>
               }
