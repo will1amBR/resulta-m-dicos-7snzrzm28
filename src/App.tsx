@@ -118,13 +118,14 @@ const App = () => (
               }
             />
             <Route
-              path="/admin/councils"
+              path="/admin/conselhos"
               element={
                 <RoleGuard allow={['doctor', 'clinic', 'admin']}>
                   <AdminCouncils />
                 </RoleGuard>
               }
             />
+            <Route path="/admin/councils" element={<Navigate to="/admin/conselhos" replace />} />
 
             <Route
               path="/clinic"

@@ -98,9 +98,16 @@ export type UserRole = 'doctor' | 'clinic' | 'patient' | 'admin'
 
 export interface ClinicStats {
   doctorCount: number
+  activeDoctorCount: number
   todayAppointmentCount: number
+  weekAppointmentCount: number
+  monthAppointmentCount: number
   scheduledCount: number
+  completedCount: number
   patientCount: number
+  monthRevenue: number
+  attendanceRate: number // percentual ex: 92
+  avgConsultationMinutes: number // ex: 28 min
 }
 
 export interface MedicationAlert {

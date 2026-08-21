@@ -40,7 +40,7 @@ export function SidebarNav() {
     { to: '/prontuario', label: 'Prontuário', icon: FileText },
     { to: '/teleconsulta', label: 'Teleconsulta', icon: Video },
     { to: '/documentos', label: 'Documentos', icon: FolderOpen },
-    { to: '/admin/councils', label: 'Aprovações', icon: ShieldCheck },
+    { to: '/admin/conselhos', label: 'Aprovações', icon: ShieldCheck },
   ]
 
   const handleSignOut = () => {
