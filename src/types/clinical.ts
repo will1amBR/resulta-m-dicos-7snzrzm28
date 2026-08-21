@@ -112,3 +112,54 @@ export interface Cid10Code {
   code: string
   description: string
 }
+
+export type CertificateStatus = 'nao_enviado' | 'pendente' | 'validado'
+
+export type PrescriptionSendMethod = 'email' | 'whatsapp' | 'sms' | 'nenhum'
+
+export interface PrescriptionItem {
+  medication: string
+  dosage: string
+  frequency?: string
+  period_days?: number
+  instructions?: string
+}
+
+export interface PrescriptionRecord {
+  id: string
+  patient_id: string
+  doctor_id: string
+  medications: PrescriptionItem[]
+  status: 'emitida' | 'enviada' | 'cancelada'
+  certificate_validated: boolean
+  sent_via?: PrescriptionSendMethod
+  sent_at?: string
+  notes?: string
+  ai_alerts?: MedicationAlert[]
+  created?: string
+  updated?: string
+  expand?: {
+    patient_id?: Patient
+    doctor_id?: {
+      id: string
+      name: string
+      crm?: string
+      council_type?: string
+      council_number?: string
+      certificate_status?: CertificateStatus
+      certificate_file?: string
+    }
+  }
+}
+
+export interface InAppNotification {
+  id: string
+  user: string
+  title: string
+  message: string
+  type: 'warning' | 'info' | 'success' | 'certificate_alert' | 'prescription'
+  read: boolean
+  link?: string
+  created?: string
+  updated?: string
+}

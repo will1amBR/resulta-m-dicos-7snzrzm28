@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Stethoscope,
   ShieldCheck,
+  Pill,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -35,8 +36,9 @@ export function SidebarNav() {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/agenda', label: 'Agenda', icon: Calendar },
     { to: '/pacientes', label: 'Pacientes', icon: Users },
-    { to: '/teleconsulta', label: 'Teleconsulta', icon: Video },
+    { to: '/doctor/receitas', label: 'Receitas', icon: Pill },
     { to: '/prontuario', label: 'Prontuário', icon: FileText },
+    { to: '/teleconsulta', label: 'Teleconsulta', icon: Video },
     { to: '/documentos', label: 'Documentos', icon: FolderOpen },
     { to: '/admin/councils', label: 'Aprovações', icon: ShieldCheck },
   ]

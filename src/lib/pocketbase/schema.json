@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T04:15:54.699Z",
+  "generatedAt": "2026-08-21T04:36:32.517Z",
   "collections": [
     {
       "name": "users",
@@ -101,6 +101,19 @@
           "required": false,
           "system": false,
           "collectionRef": "patients"
+        },
+        {
+          "name": "certificate_file",
+          "type": "file",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "certificate_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["nao_enviado", "pendente", "validado"]
         }
       ],
       "indexes": [
@@ -539,6 +552,164 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_medications_name ON medications (name)"]
+    },
+    {
+      "name": "prescriptions",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "patient_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "doctor_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "medications",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["emitida", "enviada", "cancelada"]
+        },
+        {
+          "name": "certificate_validated",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "sent_via",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["email", "whatsapp", "sms", "nenhum"]
+        },
+        {
+          "name": "sent_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ai_alerts",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_prescriptions_patient ON prescriptions (patient_id)",
+        "CREATE INDEX idx_prescriptions_doctor ON prescriptions (doctor_id)",
+        "CREATE INDEX idx_prescriptions_created ON prescriptions (created DESC)"
+      ]
+    },
+    {
+      "name": "notifications",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && user = @request.auth.id",
+        "view": "@request.auth.id != '' && user = @request.auth.id",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && user = @request.auth.id",
+        "delete": "@request.auth.id != '' && user = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "message",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "type",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["warning", "info", "success", "certificate_alert", "prescription"]
+        },
+        {
+          "name": "read",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "link",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_notifications_user_created ON notifications (user, created DESC)"
+      ]
     }
   ]
 }

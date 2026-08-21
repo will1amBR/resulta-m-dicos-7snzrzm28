@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { getMyPrescriptions } from '@/services/patient-portal'
+import pb from '@/lib/pocketbase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -121,7 +122,8 @@ export default function PatientPrescriptions() {
   useEffect(() => {
     if (!patientId) return
     getMyPrescriptions(patientId)
-      .then((realList) => {
+      .then(async (realList) => {
+        let allMeds: DetailedPrescription[] = []
         if (realList && realList.length > 0) {
           const mapped: DetailedPrescription[] = realList.map((m, idx) => ({
             id: `real-rx-${idx}`,
@@ -130,14 +132,52 @@ export default function PatientPrescriptions() {
             frequency: m.instructions || 'Conforme orientação médica',
             startDate: m.recordDate || new Date().toISOString(),
             endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-            prescribingDoctor: 'Médico Assistente',
+            prescribingDoctor: 'Dr(a). Médico Prescritor',
             doctorCrm: 'CRM/SP Ativo',
             status: 'ativa',
             instructions: m.instructions,
             continuousUse: true,
           }))
-          // Merge to retain all mock demonstrations (a_vencer, vencida, etc.)
-          setPrescriptions([...mapped, ...MOCK_PRESCRIPTIONS])
+          allMeds = [...mapped]
+        }
+
+        // Also fetch from prescriptions collection
+        try {
+          const pbPresc = await pb.collection('prescriptions').getList(1, 20, {
+            filter: `patient_id = "${patientId}"`,
+            expand: 'doctor_id',
+            sort: '-created',
+          })
+          pbPresc.items.forEach((item: any) => {
+            const meds = item.medications || []
+            const docName = item.expand?.doctor_id?.name || 'Dr(a). Médico Prescritor'
+            const docCrm = item.expand?.doctor_id?.crm || 'CRM/SP'
+            meds.forEach((m: any, mIdx: number) => {
+              allMeds.push({
+                id: `pb-rx-${item.id}-${mIdx}`,
+                medication: m.medication,
+                dosage: m.dosage,
+                frequency: m.frequency || 'Conforme orientação médica',
+                startDate: item.created || new Date().toISOString(),
+                endDate: new Date(
+                  Date.now() + (m.period_days || 30) * 24 * 60 * 60 * 1000,
+                ).toISOString(),
+                prescribingDoctor: docName,
+                doctorCrm: `CRM ${docCrm}`,
+                status: 'ativa',
+                instructions: m.instructions,
+                continuousUse: false,
+              })
+            })
+          })
+        } catch {
+          /* intentionally ignored */
+        }
+
+        if (allMeds.length > 0) {
+          setPrescriptions([...allMeds, ...MOCK_PRESCRIPTIONS])
+        } else {
+          setPrescriptions(MOCK_PRESCRIPTIONS)
         }
       })
       .catch(() => {

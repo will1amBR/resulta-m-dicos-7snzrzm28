@@ -15,6 +15,7 @@ import PatientDetail from './pages/PatientDetail'
 import Prontuario from './pages/Prontuario'
 import Teleconsulta from './pages/Teleconsulta'
 import Documentos from './pages/Documentos'
+import DoctorReceitas from './pages/DoctorReceitas'
 import Settings from './pages/Settings'
 import AdminCouncils from './pages/AdminCouncils'
 import NotFound from './pages/NotFound'
@@ -91,6 +92,15 @@ const App = () => (
                 </RoleGuard>
               }
             />
+            <Route
+              path="/doctor/receitas"
+              element={
+                <RoleGuard allow={['doctor', 'admin']}>
+                  <DoctorReceitas />
+                </RoleGuard>
+              }
+            />
+            <Route path="/receitas" element={<Navigate to="/doctor/receitas" replace />} />
             <Route
               path="/documentos"
               element={
