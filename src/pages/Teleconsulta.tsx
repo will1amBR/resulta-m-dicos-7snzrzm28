@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Video,
   Mic,
@@ -8,28 +8,270 @@ import {
   Monitor,
   PhoneOff,
   MessageSquare,
+  Loader2,
 } from 'lucide-react'
 import { useActivePatient } from '@/contexts/active-patient-context'
+import { useAuth } from '@/hooks/use-auth'
+import { getTeleconsultaMessages, sendTeleconsultaMessage } from '@/services/teleconsulta'
+import { getAppointments } from '@/services/appointments'
+import { getPatients } from '@/services/patients'
+import { Appointment, TeleconsultaMessage } from '@/types/clinical'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
+import { useRealtime } from '@/hooks/use-realtime'
 
 export default function Teleconsulta() {
-  const { activePatient } = useActivePatient()
+  const { activePatient, setActivePatient, activeAppointmentId, setActiveAppointmentId } =
+    useActivePatient()
+  const { user } = useAuth()
   const [micOn, setMicOn] = useState(true)
   const [cameraOn, setCameraOn] = useState(true)
-  const [messages, setMessages] = useState<Array<{ sender: string; text: string }>>([
-    { sender: 'Sistema', text: 'Sala virtual segura estabelecida conforme padrão CFM.' },
-  ])
+  const [currentAppt, setCurrentAppt] = useState<Appointment | null>(null)
+  const [loadingAppt, setLoadingAppt] = useState(true)
+  const [messages, setMessages] = useState<
+    Array<{ id?: string; sender: string; text: string; sender_role?: string }>
+  >([{ sender: 'Sistema', text: 'Sala virtual segura estabelecida conforme padrão CFM.' }])
   const [chatInput, setChatInput] = useState('')
+  const [sending, setSending] = useState(false)
   const [seconds, setSeconds] = useState(0)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
+  // 1. Cronômetro da chamada
   useEffect(() => {
     const interval = setInterval(() => setSeconds((s) => s + 1), 1000)
     return () => clearInterval(interval)
   }, [])
+
+  // Auto-scroll do chat ao receber ou enviar mensagens
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  // 2. Identificar consulta ativa do médico
+  useEffect(() => {
+    let isMounted = true
+
+    const loadDoctorAppointment = async () => {
+      try {
+        const doctorId = user?.id
+        const allAppts = await getAppointments(doctorId || undefined)
+        if (!isMounted) return
+
+        let foundAppt: Appointment | null = null
+
+        // 1º: Se já existe activeAppointmentId no contexto
+        if (activeAppointmentId) {
+          foundAppt = allAppts.find((a) => a.id === activeAppointmentId) || null
+        }
+
+        // 2º: Se tem activePatient selecionado, buscar consulta vinculada a ele
+        if (!foundAppt && activePatient?.id) {
+          foundAppt =
+            allAppts.find(
+              (a) =>
+                a.patient === activePatient.id &&
+                (a.status === 'em_andamento' ||
+                  a.status === 'confirmada' ||
+                  a.status === 'agendada'),
+            ) ||
+            allAppts.find((a) => a.patient === activePatient.id) ||
+            null
+        }
+
+        // 3º: Se ainda não encontrou, pegar a primeira consulta ativa do médico
+        if (!foundAppt && allAppts.length > 0) {
+          foundAppt =
+            allAppts.find((a) => a.status === 'em_andamento') ||
+            allAppts.find((a) => a.status === 'confirmada') ||
+            allAppts.find((a) => a.status === 'agendada') ||
+            allAppts[0]
+        }
+
+        if (foundAppt) {
+          setCurrentAppt(foundAppt)
+          if (!activeAppointmentId) {
+            setActiveAppointmentId(foundAppt.id)
+          }
+
+          // Se o paciente do contexto estiver vazio, atualiza com os dados expandidos ou busca
+          if (!activePatient && foundAppt.expand?.patient) {
+            setActivePatient(foundAppt.expand.patient)
+          } else if (!activePatient && foundAppt.patient) {
+            const pts = await getPatients()
+            const p = pts.find((pt) => pt.id === foundAppt!.patient)
+            if (p && isMounted) setActivePatient(p)
+          }
+
+          // Carregar histórico de mensagens
+          const dbMsgs = await getTeleconsultaMessages(foundAppt.id)
+          if (!isMounted) return
+
+          if (dbMsgs.length > 0) {
+            setMessages(
+              dbMsgs.map((m) => ({
+                id: m.id,
+                sender: m.sender,
+                text: m.text,
+                sender_role: m.sender_role,
+              })),
+            )
+          } else {
+            try {
+              const initMsg = await sendTeleconsultaMessage({
+                appointment: foundAppt.id,
+                sender: 'Sistema',
+                sender_name: 'Sistema Resulta',
+                sender_role: 'system',
+                text: 'Sala virtual segura estabelecida conforme padrão CFM.',
+              })
+              if (isMounted) {
+                setMessages([
+                  {
+                    id: initMsg.id,
+                    sender: initMsg.sender,
+                    text: initMsg.text,
+                    sender_role: initMsg.sender_role,
+                  },
+                ])
+              }
+            } catch {
+              // fallback local
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao carregar consulta no médico:', err)
+      } finally {
+        if (isMounted) {
+          setLoadingAppt(false)
+        }
+      }
+    }
+
+    loadDoctorAppointment()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user?.id, activePatient?.id, activeAppointmentId])
+
+  // 3. PocketBase Realtime (SSE) subscription
+  useRealtime<TeleconsultaMessage>(
+    'teleconsulta_messages',
+    (e) => {
+      if (!currentAppt) return
+      const record = e.record
+      if (record.appointment !== currentAppt.id) return
+
+      if (e.action === 'create') {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === record.id)) return prev
+          return [
+            ...prev,
+            {
+              id: record.id,
+              sender: record.sender,
+              text: record.text,
+              sender_role: record.sender_role,
+            },
+          ]
+        })
+      }
+    },
+    Boolean(currentAppt?.id),
+  )
+
+  // 4. Polling fallback a cada 2 segundos caso SSE tenha interrupção
+  useEffect(() => {
+    if (!currentAppt?.id) return
+
+    const interval = setInterval(async () => {
+      try {
+        const latestMsgs = await getTeleconsultaMessages(currentAppt.id)
+        if (latestMsgs.length > 0) {
+          setMessages((prev) => {
+            const map = new Map<
+              string,
+              { id?: string; sender: string; text: string; sender_role?: string }
+            >()
+            prev.forEach((m) => {
+              if (m.id) map.set(m.id, m)
+            })
+            let changed = false
+            latestMsgs.forEach((lm) => {
+              if (!map.has(lm.id)) {
+                changed = true
+              }
+            })
+            if (changed || prev.length !== latestMsgs.length) {
+              return latestMsgs.map((m) => ({
+                id: m.id,
+                sender: m.sender,
+                text: m.text,
+                sender_role: m.sender_role,
+              }))
+            }
+            return prev
+          })
+        }
+      } catch {
+        // ignora erros de polling
+      }
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [currentAppt?.id])
+
+  // 5. Envio de mensagem pelo médico
+  const handleSendMessage = async () => {
+    const text = chatInput.trim()
+    if (!text || sending) return
+
+    const doctorName = user?.name || 'Médico'
+
+    if (currentAppt?.id) {
+      setSending(true)
+      try {
+        const newMsg = await sendTeleconsultaMessage({
+          appointment: currentAppt.id,
+          sender: 'Médico',
+          sender_name: doctorName,
+          sender_role: 'doctor',
+          text,
+        })
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev
+          return [
+            ...prev,
+            {
+              id: newMsg.id,
+              sender: newMsg.sender,
+              text: newMsg.text,
+              sender_role: newMsg.sender_role,
+            },
+          ]
+        })
+        setChatInput('')
+      } catch (err) {
+        console.error('Erro ao enviar mensagem:', err)
+        // Fallback para estado local
+        setMessages((prev) => [...prev, { sender: 'Médico', text }])
+        setChatInput('')
+      } finally {
+        setSending(false)
+      }
+    } else {
+      setMessages((prev) => [...prev, { sender: 'Médico', text }])
+      setChatInput('')
+    }
+  }
 
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60)
@@ -37,11 +279,9 @@ export default function Teleconsulta() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  const handleSendMessage = () => {
-    if (!chatInput.trim()) return
-    setMessages((prev) => [...prev, { sender: 'Médico', text: chatInput.trim() }])
-    setChatInput('')
-  }
+  const patientDisplayName = activePatient
+    ? activePatient.name
+    : currentAppt?.expand?.patient?.name || (loadingAppt ? 'Carregando...' : 'Paciente Conectado')
 
   return (
     <div className="flex-1 min-h-full w-full max-w-full flex flex-col lg:flex-row gap-4 bg-slate-900 text-white p-3 sm:p-4 rounded-xl border border-slate-800 shadow-xl overflow-hidden box-border">
@@ -57,9 +297,7 @@ export default function Teleconsulta() {
               <h1 className="font-bold text-sm sm:text-base text-slate-100 truncate">
                 Teleconsulta Resulta
               </h1>
-              <p className="text-xs text-slate-400 truncate">
-                Paciente: {activePatient ? activePatient.name : 'Simulação de Atendimento'}
-              </p>
+              <p className="text-xs text-slate-400 truncate">Paciente: {patientDisplayName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -80,11 +318,11 @@ export default function Teleconsulta() {
         <div className="relative flex-1 min-h-[220px] sm:min-h-[300px] md:min-h-[360px] bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center p-4 overflow-hidden shadow-inner">
           <div className="text-center space-y-3 z-10 max-w-xs mx-auto">
             <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-tr from-slate-800 to-slate-700 border-2 border-emerald-500 shadow-lg mx-auto flex items-center justify-center font-bold text-xl sm:text-2xl text-emerald-400 tracking-wider">
-              {activePatient?.name?.slice(0, 2).toUpperCase() || 'PA'}
+              {patientDisplayName?.slice(0, 2).toUpperCase() || 'PA'}
             </div>
             <div className="space-y-1">
               <p className="font-semibold text-sm sm:text-base text-slate-100 truncate">
-                {activePatient?.name || 'Paciente Conectado'}
+                {patientDisplayName}
               </p>
               <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
@@ -176,11 +414,11 @@ export default function Teleconsulta() {
           {/* Mensagens com scroll */}
           <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[120px] max-h-48 lg:max-h-[calc(100vh-320px)]">
             {messages.map((m, i) => {
-              const isDoctor = m.sender === 'Médico'
-              const isSystem = m.sender === 'Sistema'
+              const isDoctor = m.sender === 'Médico' || m.sender_role === 'doctor'
+              const isSystem = m.sender === 'Sistema' || m.sender_role === 'system'
               return (
                 <div
-                  key={i}
+                  key={m.id || i}
                   className={`text-xs p-2.5 rounded-lg border leading-relaxed break-words ${
                     isDoctor
                       ? 'bg-blue-950/40 border-blue-900/60 ml-3 text-blue-100'
@@ -200,6 +438,7 @@ export default function Teleconsulta() {
                 </div>
               )
             })}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -209,16 +448,22 @@ export default function Teleconsulta() {
             placeholder="Digite sua mensagem..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSendMessage()
+              }
+            }}
+            disabled={sending}
             className="text-xs h-9 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 flex-1 min-w-0"
           />
           <Button
             size="sm"
             onClick={handleSendMessage}
-            disabled={!chatInput.trim()}
+            disabled={!chatInput.trim() || sending}
             className="h-9 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium shrink-0 disabled:opacity-50"
           >
-            Enviar
+            {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Enviar'}
           </Button>
         </div>
       </div>

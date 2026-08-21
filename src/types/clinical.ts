@@ -1,3 +1,5 @@
+import type { RecordModel } from 'pocketbase'
+
 export interface Specialty {
   id: string
   name: string
@@ -165,4 +167,12 @@ export interface InAppNotification {
   link?: string
   created?: string
   updated?: string
+}
+
+export interface TeleconsultaMessage extends RecordModel {
+  appointment: string
+  sender: string
+  sender_name?: string
+  sender_role: 'doctor' | 'patient' | 'system'
+  text: string
 }
