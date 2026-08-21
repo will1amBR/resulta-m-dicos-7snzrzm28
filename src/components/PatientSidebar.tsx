@@ -1,5 +1,15 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, FileText, FolderOpen, Pill, Video, LogOut, Heart } from 'lucide-react'
+import {
+  Home,
+  CalendarPlus,
+  FileText,
+  FolderOpen,
+  Pill,
+  Video,
+  UserCircle,
+  LogOut,
+  Heart,
+} from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -10,10 +20,12 @@ export function PatientSidebar() {
 
   const navItems = [
     { to: '/patient', label: 'Minhas Consultas', icon: Home },
+    { to: '/patient/agendar', label: 'Agendar Consulta', icon: CalendarPlus },
     { to: '/patient/prontuario', label: 'Meu Prontuário', icon: FileText },
     { to: '/patient/documentos', label: 'Meus Documentos', icon: FolderOpen },
     { to: '/patient/prescricoes', label: 'Minhas Prescrições', icon: Pill },
     { to: '/patient/teleconsulta', label: 'Teleconsulta', icon: Video },
+    { to: '/patient/perfil', label: 'Meu Perfil', icon: UserCircle },
   ]
 
   const handleSignOut = () => {

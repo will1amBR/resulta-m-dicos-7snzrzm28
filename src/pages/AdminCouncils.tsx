@@ -27,7 +27,7 @@ export default function AdminCouncils() {
     setLoading(true)
     try {
       const users = await getUnapprovedUsers()
-      setPending(users as PendingUser[])
+      setPending(users as unknown as PendingUser[])
     } catch {
       setPending([])
     } finally {

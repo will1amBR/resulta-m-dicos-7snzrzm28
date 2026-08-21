@@ -26,7 +26,7 @@ export default function ClinicTeam() {
   const loadDoctors = async () => {
     try {
       const list = await getClinicDoctors()
-      setDoctors(list as DoctorUser[])
+      setDoctors(list as unknown as DoctorUser[])
     } catch {
       /* ignored */
     }

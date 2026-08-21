@@ -61,6 +61,7 @@ export interface MedicalRecord {
   prescribed_medications?: PrescribedMedication[]
   cid10_codes?: CidCode[]
   procedures?: string[]
+  ai_alerts?: MedicationAlert[]
   created?: string
   updated?: string
 }

@@ -24,10 +24,12 @@ import ClinicAgenda from './pages/clinic/ClinicAgenda'
 import ClinicPatients from './pages/clinic/ClinicPatients'
 import ClinicSettings from './pages/clinic/ClinicSettings'
 import PatientDashboard from './pages/patient/PatientDashboard'
+import PatientNewAppointment from './pages/patient/PatientNewAppointment'
 import PatientRecords from './pages/patient/PatientRecords'
 import PatientDocuments from './pages/patient/PatientDocuments'
 import PatientPrescriptions from './pages/patient/PatientPrescriptions'
 import PatientTeleconsulta from './pages/patient/PatientTeleconsulta'
+import PatientProfile from './pages/patient/PatientProfile'
 
 const App = () => (
   <BrowserRouter>
@@ -164,6 +166,14 @@ const App = () => (
               }
             />
             <Route
+              path="/patient/agendar"
+              element={
+                <RoleGuard allow={['patient']}>
+                  <PatientNewAppointment />
+                </RoleGuard>
+              }
+            />
+            <Route
               path="/patient/prontuario"
               element={
                 <RoleGuard allow={['patient']}>
@@ -192,6 +202,14 @@ const App = () => (
               element={
                 <RoleGuard allow={['patient']}>
                   <PatientTeleconsulta />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/patient/perfil"
+              element={
+                <RoleGuard allow={['patient']}>
+                  <PatientProfile />
                 </RoleGuard>
               }
             />

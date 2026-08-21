@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Calendar as CalendarIcon, CheckCircle, XCircle } from 'lucide-react'
 import { getClinicAppointments, getClinicDoctors } from '@/services/clinic'
 import { updateAppointment } from '@/services/appointments'
-import { Appointment } from '@/types/clinical'
+import { Appointment, AppointmentStatus } from '@/types/clinical'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -50,7 +50,7 @@ export default function ClinicAgenda() {
     loadData()
   })
 
-  const handleAction = async (id: string, status: string) => {
+  const handleAction = async (id: string, status: AppointmentStatus) => {
     try {
       await updateAppointment(id, { status })
       toast({ title: 'Consulta atualizada!' })
