@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 
 export default function PatientTeleconsulta() {
   const { user } = useAuth()
-  const patientId = user?.patient_link
   const [micOn, setMicOn] = useState(true)
   const [cameraOn, setCameraOn] = useState(true)
   const [messages, setMessages] = useState<Array<{ sender: string; text: string }>>([
@@ -27,7 +26,7 @@ export default function PatientTeleconsulta() {
 
   const handleSend = () => {
     if (!chatInput.trim()) return
-    setMessages((prev) => [...prev, { sender: 'Paciente', text: chatInput }])
+    setMessages((prev) => [...prev, { sender: 'Paciente', text: chatInput.trim() }])
     setChatInput('')
   }
 
@@ -37,82 +36,170 @@ export default function PatientTeleconsulta() {
       .padStart(2, '0')}:${(t % 60).toString().padStart(2, '0')}`
 
   return (
-    <div className="h-full flex flex-col md:flex-row gap-4 bg-slate-900 text-white p-4 rounded-lg">
-      <div className="flex-1 flex flex-col justify-between space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+    <div className="flex-1 min-h-full w-full max-w-full flex flex-col lg:flex-row gap-4 bg-slate-900 text-white p-3 sm:p-4 rounded-xl border border-slate-800 shadow-xl overflow-hidden box-border">
+      {/* Área Principal do Vídeo e Controles */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between gap-3 sm:gap-4 overflow-hidden">
+        {/* Cabeçalho com informações da chamada */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0">
+              <Video className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-bold text-sm sm:text-base text-slate-100 truncate">
+                Teleconsulta
+              </h1>
+              <p className="text-xs text-slate-400 truncate">
+                Paciente: {user?.name || 'Conectado'}
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <Video className="h-5 w-5 text-emerald-400" />
-            <div>
-              <h1 className="font-bold text-sm">Teleconsulta</h1>
-              <p className="text-xs text-slate-400">Paciente: {user?.name || 'Conectado'}</p>
-            </div>
-          </div>
-          <Badge variant="outline" className="bg-emerald-950 text-emerald-300 border-emerald-800">
-            {formatTime(seconds)}
-          </Badge>
-        </div>
-
-        <div className="relative flex-1 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-center min-h-[300px]">
-          <div className="text-center space-y-2">
-            <div className="h-20 w-20 rounded-full bg-slate-800 border-2 border-emerald-500 mx-auto flex items-center justify-center font-bold text-xl">
-              {user?.name?.slice(0, 2).toUpperCase() || 'PA'}
-            </div>
-            <p className="font-medium text-sm text-slate-200">{user?.name || 'Paciente'}</p>
-            <p className="text-xs text-slate-500">Transmissão Criptografada</p>
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Ao Vivo
+            </span>
+            <Badge
+              variant="outline"
+              className="bg-slate-950 text-emerald-300 border-slate-800 font-mono text-xs"
+            >
+              {formatTime(seconds)}
+            </Badge>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-3 border-t border-slate-800 pt-3">
+        {/* Quadro Principal do Vídeo */}
+        <div className="relative flex-1 min-h-[220px] sm:min-h-[300px] md:min-h-[360px] bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center p-4 overflow-hidden shadow-inner">
+          <div className="text-center space-y-3 z-10 max-w-xs mx-auto">
+            <div className="relative mx-auto w-fit">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-tr from-slate-800 to-slate-700 border-2 border-emerald-500 shadow-lg flex items-center justify-center font-bold text-xl sm:text-2xl text-emerald-400 tracking-wider">
+                {user?.name?.slice(0, 2).toUpperCase() || 'PA'}
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-1 border border-slate-700">
+                {cameraOn ? (
+                  <Camera className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <CameraOff className="h-3.5 w-3.5 text-red-400" />
+                )}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="font-semibold text-sm sm:text-base text-slate-100 truncate">
+                {user?.name || 'Paciente'}
+              </p>
+              <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                Transmissão Criptografada Ponta a Ponta
+              </p>
+            </div>
+          </div>
+
+          {/* Status do microfone / câmera no canto superior */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-md px-2 py-1 text-[11px] text-slate-300">
+            {micOn ? (
+              <Mic className="h-3 w-3 text-emerald-400" />
+            ) : (
+              <MicOff className="h-3 w-3 text-red-400" />
+            )}
+            <span>{micOn ? 'Áudio ativado' : 'Áudio mudo'}</span>
+          </div>
+        </div>
+
+        {/* Barra de Controles Inferior */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 border-t border-slate-800/80 pt-3 shrink-0">
           <Button
             variant={micOn ? 'secondary' : 'destructive'}
             size="icon"
             onClick={() => setMicOn(!micOn)}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full transition-transform active:scale-95 shadow-md"
+            title={micOn ? 'Desativar microfone' : 'Ativar microfone'}
           >
-            {micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+            {micOn ? <Mic className="h-5 w-5 text-slate-100" /> : <MicOff className="h-5 w-5" />}
           </Button>
           <Button
             variant={cameraOn ? 'secondary' : 'destructive'}
             size="icon"
             onClick={() => setCameraOn(!cameraOn)}
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full transition-transform active:scale-95 shadow-md"
+            title={cameraOn ? 'Desativar câmera' : 'Ativar câmera'}
           >
-            {cameraOn ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
+            {cameraOn ? (
+              <Camera className="h-5 w-5 text-slate-100" />
+            ) : (
+              <CameraOff className="h-5 w-5" />
+            )}
           </Button>
           <Button
             variant="destructive"
             onClick={() => navigate('/patient')}
-            className="px-4 font-semibold text-xs"
+            className="h-10 sm:h-11 px-4 sm:px-6 font-semibold text-xs sm:text-sm rounded-full shadow-md transition-transform active:scale-95 flex items-center gap-2"
           >
-            <PhoneOff className="h-4 w-4 mr-2" /> Encerrar
+            <PhoneOff className="h-4 w-4" /> Encerrar
           </Button>
         </div>
       </div>
 
-      <div className="w-full md:w-80 bg-slate-950 border border-slate-800 rounded-lg p-3 flex flex-col justify-between">
-        <div className="space-y-2">
-          <h2 className="font-bold text-xs text-slate-300 flex items-center gap-1.5 border-b border-slate-800 pb-2">
-            <MessageSquare className="h-4 w-4 text-blue-400" /> Chat
-          </h2>
-          <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-            {messages.map((m, i) => (
-              <div key={i} className="text-xs p-2 rounded bg-slate-900 border border-slate-800">
-                <span className="font-bold text-blue-400 block text-[10px]">{m.sender}</span>
-                <span className="text-slate-300">{m.text}</span>
-              </div>
-            ))}
+      {/* Barra Lateral do Chat */}
+      <div className="w-full lg:w-80 lg:max-w-xs shrink-0 bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 flex flex-col justify-between min-w-0 max-h-[350px] lg:max-h-none overflow-hidden shadow-inner">
+        <div className="flex flex-col min-h-0 flex-1 space-y-2">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 shrink-0">
+            <h2 className="font-bold text-xs sm:text-sm text-slate-200 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-blue-400 shrink-0" />
+              <span>Chat da Consulta</span>
+            </h2>
+            <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+              {messages.length} {messages.length === 1 ? 'msg' : 'msgs'}
+            </span>
+          </div>
+
+          {/* Lista de Mensagens com scroll */}
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[120px] max-h-48 lg:max-h-[calc(100vh-320px)]">
+            {messages.map((m, i) => {
+              const isPatient = m.sender === 'Paciente'
+              const isSystem = m.sender === 'Sistema'
+              return (
+                <div
+                  key={i}
+                  className={`text-xs p-2.5 rounded-lg border leading-relaxed break-words ${
+                    isPatient
+                      ? 'bg-blue-950/40 border-blue-900/60 ml-3 text-blue-100'
+                      : isSystem
+                        ? 'bg-slate-900 border-slate-800 text-slate-300 italic text-[11px]'
+                        : 'bg-slate-900 border-slate-800 mr-3 text-slate-200'
+                  }`}
+                >
+                  <span
+                    className={`font-semibold block text-[10px] mb-0.5 uppercase tracking-wider ${
+                      isPatient
+                        ? 'text-blue-300'
+                        : isSystem
+                          ? 'text-emerald-400'
+                          : 'text-indigo-400'
+                    }`}
+                  >
+                    {m.sender}
+                  </span>
+                  <span className="break-words">{m.text}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
-        <div className="flex gap-1.5 pt-3">
+
+        {/* Input de Envio de Mensagem */}
+        <div className="flex items-center gap-1.5 pt-3 border-t border-slate-800/80 shrink-0 mt-2">
           <Input
-            placeholder="Mensagem..."
+            placeholder="Digite sua mensagem..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            className="text-xs h-8 bg-slate-900 border-slate-800 text-white"
+            className="text-xs h-9 bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 flex-1 min-w-0"
           />
           <Button
             size="sm"
             onClick={handleSend}
-            className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+            disabled={!chatInput.trim()}
+            className="h-9 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium shrink-0 disabled:opacity-50"
           >
             Enviar
           </Button>
