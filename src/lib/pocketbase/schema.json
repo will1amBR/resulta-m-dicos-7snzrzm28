@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-09-01T07:15:13.815Z",
+  "generatedAt": "2026-09-01T07:43:26.934Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
-        "view": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
+        "list": "",
+        "view": "",
         "create": "",
         "update": "@request.auth.id != '' && (id = @request.auth.id || @request.auth.role = 'admin')",
         "delete": "id = @request.auth.id"
@@ -159,8 +159,8 @@
       "name": "patients",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
+        "list": "",
+        "view": "",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -576,8 +576,8 @@
       "name": "prescriptions",
       "type": "base",
       "apiRules": {
-        "list": "@request.auth.id != ''",
-        "view": "@request.auth.id != ''",
+        "list": "",
+        "view": "",
         "create": "@request.auth.id != ''",
         "update": "@request.auth.id != ''",
         "delete": "@request.auth.id != ''"
@@ -672,12 +672,19 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "verification_code",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
         "CREATE INDEX idx_prescriptions_patient ON prescriptions (patient_id)",
         "CREATE INDEX idx_prescriptions_doctor ON prescriptions (doctor_id)",
-        "CREATE INDEX idx_prescriptions_created ON prescriptions (created DESC)"
+        "CREATE INDEX idx_prescriptions_created ON prescriptions (created DESC)",
+        "CREATE INDEX `idx_prescriptions_verification_code` ON `prescriptions` (verification_code)"
       ]
     },
     {

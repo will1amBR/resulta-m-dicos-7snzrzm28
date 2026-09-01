@@ -16,6 +16,7 @@ import Prontuario from './pages/Prontuario'
 import Teleconsulta from './pages/Teleconsulta'
 import Documentos from './pages/Documentos'
 import DoctorReceitas from './pages/DoctorReceitas'
+import PublicPrescriptionVerify from './pages/PublicPrescriptionVerify'
 import Settings from './pages/Settings'
 import AdminCouncils from './pages/AdminCouncils'
 import NotFound from './pages/NotFound'
@@ -42,6 +43,9 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/entrar" element={<Login />} />
           <Route path="/cadastro" element={<Register />} />
+          <Route path="/consulta-receita" element={<PublicPrescriptionVerify />} />
+          <Route path="/receitas/verificar" element={<PublicPrescriptionVerify />} />
+          <Route path="/receitas/verificar/:code" element={<PublicPrescriptionVerify />} />
 
           <Route element={<Layout />}>
             <Route

@@ -145,6 +145,7 @@ export interface PrescriptionRecord {
   medications: PrescriptionItem[]
   status: 'emitida' | 'enviada' | 'aguardando_renovacao' | 'cancelada' | 'rejeitada'
   certificate_validated: boolean
+  verification_code?: string
   sent_via?: PrescriptionSendMethod
   sent_at?: string
   notes?: string

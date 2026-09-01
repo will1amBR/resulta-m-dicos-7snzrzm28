@@ -6,10 +6,28 @@ export interface CreatePrescriptionData {
   doctor_id: string
   medications: PrescriptionItem[]
   certificate_validated: boolean
+  verification_code?: string
   notes?: string
   ai_alerts?: MedicationAlert[]
   status?: 'emitida' | 'enviada' | 'cancelada'
   sent_via?: 'email' | 'whatsapp' | 'sms' | 'nenhum'
+}
+
+export const generatePrescriptionVerificationCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let part1 = ''
+  let part2 = ''
+  for (let i = 0; i < 4; i++) {
+    part1 += chars.charAt(Math.floor(Math.random() * chars.length))
+    part2 += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return `RX-${part1}-${part2}`
+}
+
+export const getVerificationUrl = (verificationCode?: string): string => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  if (!verificationCode) return `${origin}/consulta-receita`
+  return `${origin}/receitas/verificar/${encodeURIComponent(verificationCode)}`
 }
 
 export const getDoctorPrescriptions = async (
@@ -61,12 +79,14 @@ export const getPrescriptionById = async (id: string): Promise<PrescriptionRecor
 export const createPrescription = async (
   data: CreatePrescriptionData,
 ): Promise<PrescriptionRecord> => {
+  const code = data.verification_code || generatePrescriptionVerificationCode()
   return await pb.collection('prescriptions').create<PrescriptionRecord>(
     {
       patient_id: data.patient_id,
       doctor_id: data.doctor_id,
       medications: data.medications,
       certificate_validated: data.certificate_validated,
+      verification_code: code,
       notes: data.notes || '',
       ai_alerts: data.ai_alerts || [],
       status: data.status || 'emitida',
@@ -74,6 +94,29 @@ export const createPrescription = async (
     },
     { expand: 'patient_id,doctor_id' },
   )
+}
+
+export const getPrescriptionByVerificationCode = async (
+  code: string,
+): Promise<PrescriptionRecord | null> => {
+  try {
+    const cleanCode = code.trim().toUpperCase()
+    if (!cleanCode) return null
+
+    // Try finding exact match by verification_code or id
+    const result = await pb
+      .collection('prescriptions')
+      .getFirstListItem<PrescriptionRecord>(
+        `verification_code = "${cleanCode}" || id = "${cleanCode}"`,
+        {
+          expand: 'patient_id,doctor_id',
+        },
+      )
+    return result
+  } catch (error) {
+    console.error('Prescrição não encontrada por código de verificação:', error)
+    return null
+  }
 }
 
 export const updatePrescriptionStatus = async (
@@ -134,17 +177,24 @@ export const buildWhatsAppPrescriptionUrl = (params: {
   doctorCrm?: string
   medications: PrescriptionItem[]
   prescriptionId?: string
+  verificationCode?: string
 }): string => {
   const cleanPhone = (params.phone || '').replace(/\D/g, '')
   // Brazilian phone format: add 55 if missing
   const phoneFormatted =
     cleanPhone.length >= 10 && !cleanPhone.startsWith('55') ? `55${cleanPhone}` : cleanPhone
 
+  const code = params.verificationCode || params.prescriptionId
+  const consultUrl = code ? getVerificationUrl(code) : ''
+
   let text = `*RECEITA MÉDICA DIGITAL — RESULTA MÉDICOS*\n`
   text += `*Paciente:* ${params.patientName}\n`
   text += `*Médico:* Dr(a). ${params.doctorName}${params.doctorCrm ? ` (${params.doctorCrm})` : ''}\n`
-  text += `*Data:* ${new Date().toLocaleDateString('pt-BR')}\n\n`
-  text += `*MEDICAMENTOS PRESCRITOS:*\n`
+  text += `*Data:* ${new Date().toLocaleDateString('pt-BR')}\n`
+  if (code) {
+    text += `*Código de Verificação:* ${code}\n`
+  }
+  text += `\n*MEDICAMENTOS PRESCRITOS:*\n`
 
   params.medications.forEach((med, idx) => {
     text += `\n${idx + 1}. *${med.medication}*\n`
@@ -154,6 +204,9 @@ export const buildWhatsAppPrescriptionUrl = (params: {
     if (med.instructions) text += `   • *Orientações:* ${med.instructions}\n`
   })
 
+  if (consultUrl) {
+    text += `\n*Consulta e Validação Farmacêutica:*\n${consultUrl}\n`
+  }
   text += `\n_Documento emitido digitalmente pela plataforma Resulta Médicos._`
 
   const encodedText = encodeURIComponent(text)
@@ -166,6 +219,7 @@ export const buildSmsPrescriptionText = (params: {
   patientName: string
   doctorName: string
   medications: PrescriptionItem[]
+  verificationCode?: string
 }): string => {
   let text = `Resulta Med: Receita Dr(a) ${params.doctorName} p/ ${params.patientName}:\n`
   params.medications.forEach((m, i) => {
@@ -175,5 +229,8 @@ export const buildSmsPrescriptionText = (params: {
     if (m.instructions) text += ` [${m.instructions}]`
     text += '\n'
   })
+  if (params.verificationCode) {
+    text += `Cód Verificação: ${params.verificationCode} (${getVerificationUrl(params.verificationCode)})\n`
+  }
   return text.trim()
 }

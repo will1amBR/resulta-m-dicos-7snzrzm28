@@ -32,7 +32,9 @@ import {
   buildWhatsAppPrescriptionUrl,
   buildSmsPrescriptionText,
   updatePrescriptionStatus,
+  getVerificationUrl,
 } from '@/services/prescriptions'
+import { QRCodeSVG } from '@/components/QRCodeSVG'
 
 interface PrescriptionSendModalProps {
   open: boolean
@@ -65,6 +67,8 @@ export function PrescriptionSendModal({
   const doctorName = doctor?.name || 'Médico Prescritor'
   const doctorCrm = doctor?.crm || doctor?.council_number || ''
   const medications = prescription.medications || []
+  const verificationCode = prescription.verification_code || prescription.id
+  const verificationUrl = getVerificationUrl(verificationCode)
 
   // WhatsApp URL
   const whatsAppUrl = buildWhatsAppPrescriptionUrl({
@@ -74,6 +78,7 @@ export function PrescriptionSendModal({
     doctorCrm,
     medications,
     prescriptionId: prescription.id,
+    verificationCode,
   })
 
   // SMS Text
@@ -81,6 +86,7 @@ export function PrescriptionSendModal({
     patientName,
     doctorName,
     medications,
+    verificationCode,
   })
 
   const handleSendEmail = async () => {
@@ -202,12 +208,33 @@ export function PrescriptionSendModal({
             <div className="space-y-0.5">
               <p className="font-semibold text-amber-950">Certificado Digital não validado</p>
               <p className="text-amber-800 text-[11px] leading-relaxed">
-                A receita será enviada ao paciente com os dados clínicos, porém sem o selo de
-                assinatura ICP-Brasil.
+                A receita possui QR Code e código de verificação para farmácias, porém sem o selo de
+                assinatura ICP-Brasil. Você pode regularizar seu certificado a qualquer momento.
               </p>
             </div>
           </div>
         )}
+
+        {/* QR Code and verification box banner inside send modal */}
+        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="bg-white p-1 rounded-lg border border-slate-300 shrink-0">
+              <QRCodeSVG value={verificationUrl} size={48} />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900">Código de Verificação da Farmácia:</p>
+              <p className="font-mono text-blue-700 font-bold">{verificationCode}</p>
+            </div>
+          </div>
+          <a
+            href={verificationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 shrink-0 font-medium"
+          >
+            Ver página pública <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
 
         <Tabs
           value={activeTab}

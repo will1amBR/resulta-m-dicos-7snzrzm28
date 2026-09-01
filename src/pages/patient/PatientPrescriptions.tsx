@@ -503,16 +503,14 @@ export default function PatientPrescriptions() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          toast({
-                            title: 'Download da Receita',
-                            description: `Baixando PDF oficial de ${rx.medication} com QR Code de validação.`,
-                          })
-                        }
+                        onClick={() => {
+                          const code = rx.id.replace('pb-rx-', '').split('-')[0]
+                          window.open(`/receitas/verificar/${encodeURIComponent(code)}`, '_blank')
+                        }}
                         className="text-xs text-slate-700"
                       >
                         <FileText className="h-3.5 w-3.5 mr-1" />
-                        Ver PDF
+                        Ver Receita & QR Code
                       </Button>
                     </div>
                   </div>

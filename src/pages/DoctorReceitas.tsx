@@ -21,6 +21,10 @@ import {
   ChevronRight,
   Eye,
   Check,
+  QrCode,
+  Printer,
+  Copy,
+  Upload,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useActivePatient } from '@/contexts/active-patient-context'
@@ -54,11 +58,13 @@ import {
   getDoctorPrescriptions,
   createPrescription,
   updatePrescriptionStatus,
+  getVerificationUrl,
 } from '@/services/prescriptions'
 import { createNotification } from '@/services/notifications'
 import { CertificateStatusBadge } from '@/components/CertificateStatusBadge'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
 import { PrescriptionSendModal } from '@/components/PrescriptionSendModal'
+import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { notifyMedicationInteractionAlert } from '@/services/notifications'
 import { useNavigate } from 'react-router-dom'
 
@@ -120,8 +126,9 @@ export default function DoctorReceitas() {
   const [sendModalOpen, setSendModalOpen] = useState(false)
   const [selectedRxForSend, setSelectedRxForSend] = useState<PrescriptionRecord | null>(null)
 
-  // View Details Modal
+  // View Details Modal / Print Preview Modal
   const [viewDetailsRx, setViewDetailsRx] = useState<PrescriptionRecord | null>(null)
+  const [copiedRxCode, setCopiedRxCode] = useState<string | null>(null)
 
   // Synchronize active patient if already selected globally
   useEffect(() => {
@@ -745,6 +752,19 @@ export default function DoctorReceitas() {
                     </div>
                   )}
 
+                  {/* QR Code & Farmácia Info Box in Draft Preview */}
+                  {prescriptionItems.length > 0 && (
+                    <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/70 text-xs space-y-1.5">
+                      <div className="flex items-center gap-2 text-blue-900 font-bold">
+                        <QrCode className="h-4 w-4 text-blue-700" />
+                        <span>QR Code & Código de Verificação</span>
+                      </div>
+                      <p className="text-[11px] text-blue-800 leading-relaxed">
+                        Cada receita gerada recebe automaticamente um QR Code e código alfanumérico
+                        exclusivo no rodapé para consulta e validação pela farmácia.
+                      </p>
+                    </div>
+                  )}
                   {/* AI Cross-Analysis Alert Component */}
                   {prescriptionItems.length > 0 && (
                     <div className="pt-2 border-t border-slate-100">
@@ -967,10 +987,33 @@ export default function DoctorReceitas() {
                         </div>
                       </div>
 
-                      {/* Card Actions */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                        <div className="text-[11px] text-slate-500">
-                          ID: <span className="font-mono">{rx.id}</span>
+                      {/* Card Actions & Verification Badge */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            Cód. Verificação:
+                          </span>
+                          <span className="font-mono font-bold text-xs bg-slate-100 text-blue-800 px-2 py-0.5 rounded border border-slate-200">
+                            {rx.verification_code || rx.id}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const code = rx.verification_code || rx.id
+                              navigator.clipboard.writeText(code)
+                              setCopiedRxCode(code)
+                              setTimeout(() => setCopiedRxCode(null), 2000)
+                              toast({ title: 'Código copiado!' })
+                            }}
+                            className="text-slate-400 hover:text-slate-700 transition-colors"
+                            title="Copiar código de verificação"
+                          >
+                            {copiedRxCode === (rx.verification_code || rx.id) ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-600" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -980,7 +1023,7 @@ export default function DoctorReceitas() {
                             onClick={() => setViewDetailsRx(rx)}
                             className="text-xs h-8 text-slate-700"
                           >
-                            <Eye className="h-3.5 w-3.5 mr-1" /> Ver Detalhes
+                            <Eye className="h-3.5 w-3.5 mr-1" /> Ver Receita & QR Code
                           </Button>
 
                           <Button
@@ -992,7 +1035,7 @@ export default function DoctorReceitas() {
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-8"
                           >
                             <Send className="h-3.5 w-3.5 mr-1" />
-                            {isSent ? 'Reenviar Receita' : 'Enviar ao Paciente'}
+                            {isSent ? 'Reenviar' : 'Enviar'}
                           </Button>
                         </div>
                       </div>
@@ -1013,51 +1056,100 @@ export default function DoctorReceitas() {
         onSuccess={() => loadHistory()}
       />
 
-      {/* Modal de Detalhes da Receita */}
+      {/* Modal de Detalhes e Visualização de Impressão da Receita */}
       {viewDetailsRx && (
         <Dialog open={!!viewDetailsRx} onOpenChange={() => setViewDetailsRx(null)}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-base font-bold text-slate-900">
-                Detalhes da Prescrição Médica
-              </DialogTitle>
+              <div className="flex items-center justify-between pr-4">
+                <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-600" /> Documento da Receita Médica
+                </DialogTitle>
+              </div>
               <DialogDescription className="text-xs">
-                Paciente: <strong>{viewDetailsRx.expand?.patient_id?.name}</strong>
+                Visualização oficial da receita com QR Code inferior e código para a farmácia.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 text-xs py-2">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
-                <p>
-                  <strong>Data de Emissão:</strong>{' '}
-                  {viewDetailsRx.created
-                    ? new Date(viewDetailsRx.created).toLocaleString('pt-BR')
-                    : ''}
-                </p>
-                <p>
-                  <strong>Status de Envio:</strong> {viewDetailsRx.status} (
-                  {viewDetailsRx.sent_via || 'nenhum'})
-                </p>
-                <p>
-                  <strong>Assinatura Digital:</strong>{' '}
-                  {viewDetailsRx.certificate_validated ? 'Validada (ICP-Brasil)' : 'Não validada'}
-                </p>
+            {/* Document preview container */}
+            <div className="space-y-4 text-xs py-2 bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-xs">
+              {/* Header inside document */}
+              <div className="border-b border-slate-200 pb-3 flex justify-between items-start gap-3">
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900">
+                    Dr(a).{' '}
+                    {viewDetailsRx.expand?.doctor_id?.name || user?.name || 'Médico Prescritor'}
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    {viewDetailsRx.expand?.doctor_id?.council_type || user?.council_type || 'CRM'}:{' '}
+                    <strong>
+                      {viewDetailsRx.expand?.doctor_id?.council_number ||
+                        viewDetailsRx.expand?.doctor_id?.crm ||
+                        user?.crm ||
+                        user?.council_number ||
+                        'Ativo'}
+                    </strong>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                    Emissão
+                  </span>
+                  <p className="text-[11px] font-bold text-slate-700">
+                    {viewDetailsRx.created
+                      ? new Date(viewDetailsRx.created).toLocaleDateString('pt-BR')
+                      : 'Hoje'}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h5 className="font-bold text-slate-800 mb-2">Medicamentos:</h5>
+              {/* Patient details */}
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center text-xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    Paciente
+                  </span>
+                  <p className="font-bold text-slate-900">
+                    {viewDetailsRx.expand?.patient_id?.name || 'Paciente'}
+                  </p>
+                </div>
+                {viewDetailsRx.expand?.patient_id?.cpf && (
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      CPF
+                    </span>
+                    <p className="font-mono text-slate-700">
+                      {viewDetailsRx.expand?.patient_id?.cpf}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Prescribed Medications */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold uppercase text-slate-500 block">
+                  Medicamentos Prescritos:
+                </span>
                 <div className="space-y-2">
                   {(viewDetailsRx.medications || []).map((m, idx) => (
-                    <div key={idx} className="p-2.5 bg-white border rounded-lg text-xs">
-                      <p className="font-bold text-slate-900">{m.medication}</p>
+                    <div
+                      key={idx}
+                      className="p-3 bg-slate-50/70 border border-slate-200 rounded-lg text-xs space-y-1"
+                    >
+                      <div className="flex justify-between items-start">
+                        <p className="font-bold text-slate-900">
+                          {idx + 1}. {m.medication}
+                        </p>
+                        <Badge variant="outline" className="text-[10px] bg-white">
+                          {m.dosage}
+                        </Badge>
+                      </div>
                       <p className="text-slate-600">
-                        Dosagem: {m.dosage} {m.frequency && `• Frequência: ${m.frequency}`}
+                        {m.frequency && `Frequência: ${m.frequency}`}
+                        {m.period_days && ` • Duração: ${m.period_days} dias`}
                       </p>
-                      {m.period_days && (
-                        <p className="text-slate-500">Período: {m.period_days} dias</p>
-                      )}
                       {m.instructions && (
-                        <p className="text-slate-500 italic mt-0.5">
+                        <p className="text-[11px] text-slate-500 italic">
                           Orientações: {m.instructions}
                         </p>
                       )}
@@ -1067,13 +1159,61 @@ export default function DoctorReceitas() {
               </div>
 
               {viewDetailsRx.notes && (
-                <div className="p-2 bg-blue-50 border border-blue-100 rounded text-blue-900">
+                <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded text-blue-950 text-xs">
                   <strong>Observações:</strong> {viewDetailsRx.notes}
                 </div>
               )}
+
+              {/* QR Code and Verification Section at bottom of prescription */}
+              <div className="pt-4 border-t-2 border-dashed border-slate-200">
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white p-1.5 rounded-lg border border-slate-300 shadow-xs shrink-0">
+                      <QRCodeSVG
+                        value={getVerificationUrl(
+                          viewDetailsRx.verification_code || viewDetailsRx.id,
+                        )}
+                        size={80}
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Consulta Farmacêutica
+                      </span>
+                      <p className="font-bold text-slate-900 text-xs">Validação por QR Code</p>
+                      <p className="text-[10px] text-slate-500 leading-tight max-w-[200px]">
+                        Aponte a câmera para consultar a autenticidade desta receita na farmácia.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-left sm:text-right space-y-1 w-full sm:w-auto">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                      Código de Verificação:
+                    </span>
+                    <span className="font-mono text-xs sm:text-sm font-bold bg-blue-100 text-blue-900 px-2.5 py-1 rounded border border-blue-200 inline-block">
+                      {viewDetailsRx.verification_code || viewDetailsRx.id}
+                    </span>
+                    <p className="text-[9px] text-slate-400 font-mono">
+                      {getVerificationUrl(viewDetailsRx.verification_code || viewDetailsRx.id)}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const code = viewDetailsRx.verification_code || viewDetailsRx.id
+                  window.open(getVerificationUrl(code), '_blank')
+                }}
+                className="text-xs"
+              >
+                <ExternalLink className="h-3.5 w-3.5 mr-1" /> Abrir Página Pública
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -1092,7 +1232,7 @@ export default function DoctorReceitas() {
                 }}
                 className="bg-blue-600 text-white text-xs font-bold"
               >
-                <Send className="h-3.5 w-3.5 mr-1" /> Opções de Envio
+                <Send className="h-3.5 w-3.5 mr-1" /> Enviar ao Paciente
               </Button>
             </DialogFooter>
           </DialogContent>
