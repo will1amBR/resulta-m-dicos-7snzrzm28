@@ -146,15 +146,15 @@ export default function Documentos() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-5 pb-12 overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto space-y-5 pb-12">
       {/* Header Banner */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3 min-w-0">
+        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
           <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
             <FolderOpen className="h-5 w-5" />
           </div>
-          <div className="min-w-0">
-            <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2 truncate">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-bold text-lg text-slate-900 truncate">
               Gestão de Documentos do Paciente
             </h1>
             <p className="text-xs text-slate-500 truncate">
@@ -165,7 +165,7 @@ export default function Documentos() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           {/* Seletor rápido de paciente */}
           {allPatients.length > 1 && (
             <Select
@@ -175,12 +175,12 @@ export default function Documentos() {
                 if (found) setActivePatient(found)
               }}
             >
-              <SelectTrigger className="h-9 text-xs w-44 hidden md:flex">
+              <SelectTrigger className="h-9 text-xs w-44 hidden md:flex truncate">
                 <SelectValue placeholder="Trocar paciente" />
               </SelectTrigger>
               <SelectContent>
                 {allPatients.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
+                  <SelectItem key={p.id} value={p.id} className="text-xs">
                     {p.name}
                   </SelectItem>
                 ))}
@@ -191,9 +191,9 @@ export default function Documentos() {
           <Button
             onClick={() => setUploadOpen(true)}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 px-3.5 shadow-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 px-3.5 shadow-sm shrink-0"
           >
-            <Upload className="h-4 w-4 mr-1.5" /> Anexar Documento
+            <Upload className="h-4 w-4 mr-1.5 shrink-0" /> Anexar Documento
           </Button>
         </div>
       </div>
@@ -271,24 +271,24 @@ export default function Documentos() {
               return (
                 <div
                   key={doc.id}
-                  className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 shadow-subtle hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group min-w-0"
+                  className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 shadow-subtle hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group min-w-0 max-w-full"
                 >
                   {/* Top content */}
-                  <div className="space-y-3 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-3 min-w-0 w-full overflow-hidden">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
                       <Badge
                         variant="secondary"
-                        className="text-[10px] font-semibold capitalize bg-slate-100 text-slate-700 truncate max-w-[120px]"
+                        className="text-[10px] font-semibold capitalize bg-slate-100 text-slate-700 truncate shrink min-w-0 max-w-[130px]"
                       >
                         {doc.folder}
                       </Badge>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         {doc.ocr_status === 'concluido' && (
                           <Badge
                             variant="secondary"
                             className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 shrink-0"
                           >
-                            <Sparkles className="h-2.5 w-2.5 text-emerald-600" /> OCR Concluído
+                            <Sparkles className="h-2.5 w-2.5 text-emerald-600" /> OCR
                           </Badge>
                         )}
                         {doc.ai_classified && (
@@ -306,18 +306,18 @@ export default function Documentos() {
                       <div className="h-9 w-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         <FileText className="h-4.5 w-4.5" />
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 overflow-hidden">
                         <h3
-                          className="font-bold text-xs text-slate-900 truncate leading-snug"
+                          className="font-bold text-xs text-slate-900 truncate leading-snug break-all"
                           title={doc.name}
                         >
                           {doc.name}
                         </h3>
-                        <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {dtFormatted}
+                        <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1 truncate">
+                          <Calendar className="h-3 w-3 shrink-0" /> {dtFormatted}
                         </p>
                         {doc.ocr_summary && (
-                          <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 mt-2 line-clamp-2">
+                          <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 mt-2 line-clamp-2 break-words">
                             <strong>Resumo OCR:</strong> {doc.ocr_summary}
                           </p>
                         )}
@@ -326,26 +326,36 @@ export default function Documentos() {
                   </div>
 
                   {/* Bottom Actions */}
-                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 gap-2 min-w-0">
-                    <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 gap-2 min-w-0 w-full">
+                    <div className="flex-1 min-w-0 max-w-[130px]">
                       <Select
                         value={doc.folder}
                         onValueChange={(val) => handleFolderChange(doc.id, val as DocumentFolder)}
                       >
-                        <SelectTrigger className="h-7 text-[10px] w-full max-w-[120px] bg-slate-50 border-slate-200">
+                        <SelectTrigger className="h-7 text-[10px] w-full bg-slate-50 border-slate-200 truncate">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="exames">Exames</SelectItem>
-                          <SelectItem value="medicamentos">Medicamentos</SelectItem>
-                          <SelectItem value="procedimentos">Procedimentos</SelectItem>
-                          <SelectItem value="agendamentos">Agendamentos</SelectItem>
-                          <SelectItem value="outros">Outros</SelectItem>
+                          <SelectItem value="exames" className="text-xs">
+                            Exames
+                          </SelectItem>
+                          <SelectItem value="medicamentos" className="text-xs">
+                            Medicamentos
+                          </SelectItem>
+                          <SelectItem value="procedimentos" className="text-xs">
+                            Procedimentos
+                          </SelectItem>
+                          <SelectItem value="agendamentos" className="text-xs">
+                            Agendamentos
+                          </SelectItem>
+                          <SelectItem value="outros" className="text-xs">
+                            Outros
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                       <Button
                         size="icon"
                         variant="ghost"

@@ -48,8 +48,13 @@ export default function Settings() {
   const [councilNumber, setCouncilNumber] = useState(user?.council_number || '')
 
   // Certificate state
+  const rawStatus = (user?.certificate_status || '').toLowerCase()
   const certStatus: CertificateStatus =
-    (user?.certificate_status as CertificateStatus) || 'nao_enviado'
+    rawStatus === 'validado' || rawStatus === 'active'
+      ? 'validado'
+      : rawStatus === 'pendente' || rawStatus === 'pending' || rawStatus === 'pending_validation'
+        ? 'pendente'
+        : 'nao_enviado'
   const certFile = user?.certificate_file || ''
   const [isUploadingCert, setIsUploadingCert] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -302,8 +307,8 @@ export default function Settings() {
                   {certFile ? 'Substituir Certificado Digital' : 'Enviar Certificado Digital'}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Formatos aceitos: <strong>PDF, PFX, P12</strong> (Certificados A1/A3 ICP-Brasil,
-                  máx. 10MB)
+                  Formatos aceitos: <strong>.pdf, .pfx, .p12, .crt</strong> (Certificados A1/A3
+                  ICP-Brasil, máx. 10MB)
                 </p>
               </div>
 

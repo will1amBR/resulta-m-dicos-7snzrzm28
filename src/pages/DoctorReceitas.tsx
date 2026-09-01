@@ -70,9 +70,14 @@ export default function DoctorReceitas() {
   const [activeTab, setActiveTab] = useState<'nova' | 'historico'>('nova')
 
   // Certificate status of current doctor
+  const rawStatus = (user?.certificate_status || '').toLowerCase()
+  const isCertValidated = rawStatus === 'validado' || rawStatus === 'active'
   const certStatus: CertificateStatus =
-    (user?.certificate_status as CertificateStatus) || 'nao_enviado'
-  const isCertValidated = certStatus === 'validado'
+    rawStatus === 'validado' || rawStatus === 'active'
+      ? 'validado'
+      : rawStatus === 'pendente' || rawStatus === 'pending' || rawStatus === 'pending_validation'
+        ? 'pendente'
+        : 'nao_enviado'
 
   // ==========================================
   // SEÇÃO 1: NOVA RECEITA (FORM STATE)
@@ -319,14 +324,13 @@ export default function DoctorReceitas() {
     } catch (err: any) {
       toast({
         title: 'Erro ao emitir receita',
-        description: err?.message || 'Verifique os dados e tente novamente.',
+        description: err?.message || 'Tente novamente.',
         variant: 'destructive',
       })
     } finally {
       setIsSubmittingRx(false)
     }
   }
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-16">
       {/* Header Banner */}
@@ -359,16 +363,14 @@ export default function DoctorReceitas() {
             </span>
           </div>
           <CertificateStatusBadge status={certStatus} />
-          {!isCertValidated && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/configuracoes')}
-              className="text-xs text-blue-700 hover:text-blue-800 h-7"
-            >
-              Regularizar
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/configuracoes')}
+            className="text-xs text-blue-700 hover:text-blue-800 h-7"
+          >
+            {isCertValidated ? 'Gerenciar' : 'Enviar Certificado'}
+          </Button>
         </div>
       </div>
 
@@ -424,7 +426,7 @@ export default function DoctorReceitas() {
                 onClick={() => navigate('/configuracoes')}
                 className="text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100 shrink-0 h-8 font-semibold"
               >
-                Enviar Certificado
+                Upload do Certificado
               </Button>
             </div>
           )}
