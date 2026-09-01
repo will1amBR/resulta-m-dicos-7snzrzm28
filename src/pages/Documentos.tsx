@@ -282,14 +282,24 @@ export default function Documentos() {
                       >
                         {doc.folder}
                       </Badge>
-                      {doc.ai_classified && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200/80 flex items-center gap-1 shrink-0"
-                        >
-                          <Sparkles className="h-2.5 w-2.5 text-amber-600" /> Classificado por IA
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {doc.ocr_status === 'concluido' && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 shrink-0"
+                          >
+                            <Sparkles className="h-2.5 w-2.5 text-emerald-600" /> OCR Concluído
+                          </Badge>
+                        )}
+                        {doc.ai_classified && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200/80 flex items-center gap-1 shrink-0"
+                          >
+                            <Sparkles className="h-2.5 w-2.5 text-amber-600" /> IA
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-start gap-3 min-w-0 pt-1">
@@ -306,6 +316,11 @@ export default function Documentos() {
                         <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                           <Calendar className="h-3 w-3" /> {dtFormatted}
                         </p>
+                        {doc.ocr_summary && (
+                          <p className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 mt-2 line-clamp-2">
+                            <strong>Resumo OCR:</strong> {doc.ocr_summary}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -422,6 +437,24 @@ export default function Documentos() {
                     {selectedDocPreview.ai_classified ? 'Sim (Inteligente)' : 'Manual'}
                   </span>
                 </div>
+                {selectedDocPreview.ocr_summary && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-slate-500 block mb-1">Resumo Clínico OCR:</span>
+                    <p className="font-medium text-slate-900 bg-white p-2 rounded border text-[11px]">
+                      {selectedDocPreview.ocr_summary}
+                    </p>
+                  </div>
+                )}
+                {selectedDocPreview.ocr_text && (
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-slate-500 block mb-1">
+                      Texto Extraído (OCR Completo):
+                    </span>
+                    <div className="font-mono text-[10px] text-slate-800 bg-white p-2.5 rounded border max-h-36 overflow-y-auto whitespace-pre-wrap">
+                      {selectedDocPreview.ocr_text}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

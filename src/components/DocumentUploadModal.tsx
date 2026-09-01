@@ -58,10 +58,10 @@ export function DocumentUploadModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Anexar Documento do Paciente</DialogTitle>
+          <DialogTitle>Anexar Documento com OCR Inteligente</DialogTitle>
           <DialogDescription>
-            Envie arquivos PDF ou imagens. A IA classifica a pasta automaticamente caso selecione
-            "Outros".
+            Envie arquivos PDF ou imagens. O OCR lê e extrai o conteúdo clínico automaticamente,
+            categorizando e criando a pasta correspondente.
           </DialogDescription>
         </DialogHeader>
 
@@ -101,11 +101,11 @@ export function DocumentUploadModal({
                 <SelectValue placeholder="Selecione a pasta" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="exames">Exames</SelectItem>
-                <SelectItem value="medicamentos">Medicamentos</SelectItem>
+                <SelectItem value="exames">Exames (Laboratório & Imagem)</SelectItem>
+                <SelectItem value="medicamentos">Medicamentos & Receitas</SelectItem>
                 <SelectItem value="procedimentos">Procedimentos</SelectItem>
                 <SelectItem value="agendamentos">Agendamentos</SelectItem>
-                <SelectItem value="outros">Outros (Classificação IA)</SelectItem>
+                <SelectItem value="outros">Outros (Auto-classificação e OCR)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -120,7 +120,7 @@ export function DocumentUploadModal({
               disabled={loading || !file}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {loading ? 'Enviando e Classificando...' : 'Anexar Documento'}
+              {loading ? 'Processando OCR & Enviando...' : 'Anexar Documento'}
             </Button>
           </div>
         </form>

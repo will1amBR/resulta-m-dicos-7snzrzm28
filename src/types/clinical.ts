@@ -77,6 +77,9 @@ export interface DocumentItem {
   file?: string
   name: string
   ai_classified?: boolean
+  ocr_text?: string
+  ocr_summary?: string
+  ocr_status?: 'pendente' | 'processando' | 'concluido' | 'erro'
   created?: string
   updated?: string
 }
@@ -114,6 +117,7 @@ export interface MedicationAlert {
   medication: string
   severity: 'high' | 'medium' | 'none'
   message: string
+  suggestion?: string
 }
 
 export interface Cid10Code {

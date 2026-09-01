@@ -6,6 +6,9 @@ import {
   UserCheck,
   Menu,
   AlertTriangle,
+  MessageCircle,
+  Share2,
+  Copy,
   KeyRound,
   CheckCircle,
 } from 'lucide-react'
@@ -21,6 +24,8 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from '@/services/notifications'
+import { buildWhatsAppPrescriptionUrl, buildSmsPrescriptionText } from '@/services/prescriptions'
+import { useToast } from '@/hooks/use-toast'
 import { Patient, InAppNotification } from '@/types/clinical'
 import { useNavigate } from 'react-router-dom'
 
@@ -33,6 +38,7 @@ export function Header({
 }) {
   const { user } = useAuth()
   const { activePatient, setActivePatient } = useActivePatient()
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<Patient[]>([])
   const [isOpenSearch, setIsOpenSearch] = useState(false)
@@ -210,8 +216,7 @@ export function Header({
                   return (
                     <div
                       key={notif.id}
-                      onClick={() => handleNotificationClick(notif)}
-                      className={`p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                      className={`p-2.5 rounded-lg border transition-colors ${
                         !notif.read
                           ? isCertAlert
                             ? 'bg-amber-50 border-amber-200 font-medium'
@@ -219,25 +224,67 @@ export function Header({
                           : 'bg-slate-50 border-slate-100 opacity-80'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-1">
+                      <div
+                        onClick={() => handleNotificationClick(notif)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex items-start justify-between gap-1">
+                          <p
+                            className={`font-bold text-xs ${
+                              isCertAlert ? 'text-amber-950' : 'text-slate-900'
+                            }`}
+                          >
+                            {notif.title}
+                          </p>
+                          {!notif.read && (
+                            <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-1" />
+                          )}
+                        </div>
                         <p
-                          className={`font-bold text-xs ${
-                            isCertAlert ? 'text-amber-950' : 'text-slate-900'
+                          className={`text-[11px] mt-1 leading-relaxed ${
+                            isCertAlert ? 'text-amber-800' : 'text-slate-600'
                           }`}
                         >
-                          {notif.title}
+                          {notif.message}
                         </p>
-                        {!notif.read && (
-                          <span className="h-2 w-2 rounded-full bg-blue-600 shrink-0 mt-1" />
-                        )}
                       </div>
-                      <p
-                        className={`text-[11px] mt-1 leading-relaxed ${
-                          isCertAlert ? 'text-amber-800' : 'text-slate-600'
-                        }`}
-                      >
-                        {notif.message}
-                      </p>
+
+                      {/* Ações de compartilhamento via WhatsApp / SMS se for notificação de receita */}
+                      {notif.type === 'prescription' && (
+                        <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const waUrl = `https://wa.me/?text=${encodeURIComponent(
+                                `Olá! Sua receita médica Resulta está disponível: ${notif.message}`,
+                              )}`
+                              window.open(waUrl, '_blank')
+                            }}
+                            className="h-6 px-2 text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                          >
+                            <MessageCircle className="h-3 w-3 mr-1 text-emerald-600" /> WhatsApp
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigator.clipboard.writeText(
+                                `Resulta Médicos - Receita: ${notif.message}`,
+                              )
+                              toast({
+                                title: 'Copiado para SMS',
+                                description: 'Texto da receita copiado para área de transferência.',
+                              })
+                            }}
+                            className="h-6 px-2 text-[10px] bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100"
+                          >
+                            <Copy className="h-3 w-3 mr-1 text-blue-600" /> Copiar SMS
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )
                 })

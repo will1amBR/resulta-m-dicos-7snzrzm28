@@ -52,13 +52,19 @@ export function MedicationAlerts({ alerts, loading }: MedicationAlertsProps) {
         const Icon = c.icon
 
         return (
-          <div key={idx} className={`p-2.5 border rounded-md ${c.bg} animate-fade-in`}>
+          <div key={idx} className={`p-2.5 border rounded-md ${c.bg} animate-fade-in space-y-1.5`}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 flex-1">
                 <Icon className={`h-4 w-4 ${c.text} shrink-0 mt-0.5`} />
                 <div className="flex-1">
                   <p className={`font-semibold ${c.text}`}>{alert.medication}</p>
                   <p className="text-[11px] text-slate-700 mt-0.5">{alert.message}</p>
+                  {alert.suggestion && (
+                    <div className="mt-1.5 p-1.5 bg-white/80 rounded border border-slate-200/60 text-[11px] text-slate-800">
+                      <strong className="text-blue-700">💡 Sugestão / Alternativa: </strong>
+                      <span>{alert.suggestion}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${c.labelBg} shrink-0`}>

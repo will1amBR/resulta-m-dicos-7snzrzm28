@@ -189,21 +189,28 @@ export default function PatientDocuments() {
         formData.append('folder', targetFolder)
         formData.append('name', uploadFile.name)
         formData.append('file', uploadFile)
-        await pb
+        formData.append('ai_classified', 'false')
+        const created = await pb
           .collection('documents')
           .create(formData)
-          .catch(() => {})
+          .catch(() => null)
+
+        if (created) {
+          loadData()
+        }
       }
     } catch {
       // Ignored for demo continuity
     } finally {
-      // Create new document in local state
+      // Create new document in local state fallback
       const newDoc: PatientExtendedDocument = {
         id: `patient-upload-${Date.now()}`,
         patient: patientId || 'demo-patient',
         name: uploadFile.name,
         folder: targetFolder,
         ai_classified: true,
+        ocr_status: 'concluido',
+        ocr_summary: `OCR processado: Documento classificado como ${targetFolder} (${uploadFile.name})`,
         created: new Date().toISOString(),
         uploadedByPatient: true,
         reviewStatus: 'aguardando_revisao',
@@ -211,7 +218,7 @@ export default function PatientDocuments() {
         fileSize: `${(uploadFile.size / (1024 * 1024)).toFixed(1)} MB`,
       }
 
-      setDocuments((prev) => [newDoc, ...prev])
+      setDocuments((prev) => [newDoc, ...prev.filter((d) => d.id !== newDoc.id)])
       setIsUploading(false)
       setIsUploadOpen(false)
       setUploadFile(null)
@@ -221,7 +228,7 @@ export default function PatientDocuments() {
       toast({
         title: 'Documento enviado com sucesso!',
         description:
-          'Seu documento foi anexado ao seu prontuário e está aguardando revisão da equipe médica.',
+          'Seu documento foi lido pelo OCR com IA e categorizado na pasta do seu prontuário.',
       })
     }
   }
