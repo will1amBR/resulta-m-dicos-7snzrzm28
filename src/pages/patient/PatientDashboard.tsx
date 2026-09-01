@@ -375,12 +375,14 @@ export default function PatientDashboard() {
             <Card className="h-full hover:border-blue-400 hover:shadow-md transition-all duration-200">
               <CardContent className="p-5 flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className="text-xs font-medium text-slate-500">Últimos Exames</span>
+                  <span className="text-xs font-medium text-slate-500">Documentos & Exames</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">4</span>
-                    <span className="text-[11px] text-emerald-600 font-medium">disponíveis</span>
+                    <span className="text-2xl font-bold text-slate-900">5</span>
+                    <span className="text-[11px] text-emerald-600 font-medium">
+                      laudos & exames
+                    </span>
                   </div>
-                  <p className="text-[11px] text-slate-400">Hemograma, ECG, Raio-X...</p>
+                  <p className="text-[11px] text-slate-400">Envie novos exames para seu médico</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FlaskConical className="h-6 w-6" />
@@ -388,18 +390,19 @@ export default function PatientDashboard() {
               </CardContent>
             </Card>
           </Link>
-
           {/* Card 2: Medicações ativas */}
           <Link to="/patient/prescricoes" className="group block">
             <Card className="h-full hover:border-blue-400 hover:shadow-md transition-all duration-200">
               <CardContent className="p-5 flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className="text-xs font-medium text-slate-500">Medicações Ativas</span>
+                  <span className="text-xs font-medium text-slate-500">
+                    Prescrições & Validades
+                  </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">3</span>
-                    <span className="text-[11px] text-blue-600 font-medium">em uso regular</span>
+                    <span className="text-2xl font-bold text-slate-900">4</span>
+                    <span className="text-[11px] text-blue-600 font-medium">ativas / a vencer</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">Losartana, Rosuvastatina...</p>
+                  <p className="text-[11px] text-slate-400">Status em tempo real e renovação</p>
                 </div>
                 <div className="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Pill className="h-6 w-6" />
@@ -407,25 +410,26 @@ export default function PatientDashboard() {
               </CardContent>
             </Card>
           </Link>
-
-          {/* Card 3: Próximos procedimentos / rotina */}
+          {/* Card 3: Timeline do Prontuário */}
           <Link to="/patient/prontuario" className="group block">
             <Card className="h-full hover:border-blue-400 hover:shadow-md transition-all duration-200">
               <CardContent className="p-5 flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className="text-xs font-medium text-slate-500">Próximos Procedimentos</span>
+                  <span className="text-xs font-medium text-slate-500">Timeline do Prontuário</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-slate-900">1</span>
-                    <span className="text-[11px] text-amber-600 font-medium">programado</span>
+                    <span className="text-2xl font-bold text-slate-900">4</span>
+                    <span className="text-[11px] text-indigo-600 font-medium">
+                      eventos clínicos
+                    </span>
                   </div>
-                  <p className="text-[11px] text-slate-400">Ecocardiograma com Doppler</p>
+                  <p className="text-[11px] text-slate-400">Consultas, exames e condutas</p>
                 </div>
-                <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Activity className="h-6 w-6" />
+                <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileText className="h-6 w-6" />
                 </div>
               </CardContent>
             </Card>
-          </Link>
+          </Link>{' '}
         </div>
       </div>
 

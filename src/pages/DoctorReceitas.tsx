@@ -59,6 +59,7 @@ import { createNotification } from '@/services/notifications'
 import { CertificateStatusBadge } from '@/components/CertificateStatusBadge'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
 import { PrescriptionSendModal } from '@/components/PrescriptionSendModal'
+import { notifyMedicationInteractionAlert } from '@/services/notifications'
 import { useNavigate } from 'react-router-dom'
 
 export default function DoctorReceitas() {
@@ -187,7 +188,18 @@ export default function DoctorReceitas() {
         })),
       }
       const res = await analyzeMedications(payload)
-      setAiAlerts(res.alerts || [])
+      const alerts = res.alerts || []
+      setAiAlerts(alerts)
+
+      // Se houver alerta de severidade alta, emitir notificação push
+      const highRisk = alerts.find((a: any) => a.severity === 'high')
+      if (highRisk && items.length >= 2) {
+        notifyMedicationInteractionAlert(
+          items[0].medication,
+          items[1]?.medication || 'outro medicamento',
+          'high',
+        )
+      }
     } catch {
       // Fallback: rule-based check
       setAiAlerts([])

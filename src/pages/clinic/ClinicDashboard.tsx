@@ -32,12 +32,7 @@ import { ClinicStats, Appointment } from '@/types/clinical'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
+import { ClinicReportsModal } from '@/components/ClinicReportsModal'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 
@@ -48,6 +43,7 @@ export default function ClinicDashboard() {
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([])
   const [doctorsList, setDoctorsList] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false)
 
   const loadData = async () => {
     try {
@@ -141,61 +137,6 @@ export default function ClinicDashboard() {
     return result.sort((a, b) => b.total - a.total).slice(0, 6)
   }, [allAppointments, doctorsList])
 
-  // Exportar Relatório CSV
-  const exportCSV = () => {
-    if (allAppointments.length === 0) {
-      toast({
-        title: 'Nenhum dado para exportar',
-        description: 'Não há consultas registradas para gerar o relatório.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const headers = [
-      'Data e Hora',
-      'Paciente',
-      'CPF',
-      'Médico',
-      'Especialidade',
-      'Status',
-      'Motivo',
-    ]
-    const rows = allAppointments.map((a) => {
-      const dt = new Date(a.date_time).toLocaleString('pt-BR')
-      const patName = a.expand?.patient?.name || 'Paciente'
-      const patCpf = a.expand?.patient?.cpf || ''
-      const docName = a.expand?.doctor?.name || 'Médico'
-      const spec = doctorsList.find((d) => d.id === a.doctor)?.expand?.specialty?.name || '-'
-      const status = a.status
-      const reason = a.reason || '-'
-      return `"${dt}","${patName}","${patCpf}","${docName}","${spec}","${status}","${reason}"`
-    })
-
-    const csvContent =
-      'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute(
-      'download',
-      `relatorio-consultas-clinica-${new Date().toISOString().slice(0, 10)}.csv`,
-    )
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    toast({
-      title: 'Relatório CSV exportado!',
-      description: 'O download do arquivo de dados da clínica foi iniciado.',
-    })
-  }
-
-  // Exportar / Imprimir PDF
-  const handlePrint = () => {
-    window.print()
-  }
-
   return (
     <div className="space-y-6">
       {/* Header com Ações e Exportação */}
@@ -212,28 +153,15 @@ export default function ClinicDashboard() {
         </div>
 
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 text-xs font-semibold gap-1.5 border-slate-300 hover:bg-slate-50"
-              >
-                <Download className="h-4 w-4 text-slate-600" />
-                Exportar Relatório
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 text-xs">
-              <DropdownMenuItem onClick={exportCSV} className="cursor-pointer gap-2">
-                <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
-                <span>Planilha Excel (CSV)</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePrint} className="cursor-pointer gap-2">
-                <Printer className="h-4 w-4 text-blue-600" />
-                <span>Imprimir / Salvar PDF</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsReportsModalOpen(true)}
+            className="h-9 text-xs font-semibold gap-1.5 border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+            Relatórios & Exportação (CSV/PDF)
+          </Button>
 
           <Link to="/clinic/agenda">
             <Button
@@ -597,6 +525,15 @@ export default function ClinicDashboard() {
           )}
         </div>
       </div>
+
+      {/* Modal Granular de Relatórios e Exportação CSV/PDF */}
+      <ClinicReportsModal
+        isOpen={isReportsModalOpen}
+        onClose={() => setIsReportsModalOpen(false)}
+        appointments={allAppointments}
+        doctors={doctorsList}
+        stats={stats}
+      />
     </div>
   )
 }

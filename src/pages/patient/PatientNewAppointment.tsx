@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { getSpecialties } from '@/services/specialties'
 import { createAppointment } from '@/services/appointments'
 import { Specialty } from '@/types/clinical'
+import { notifyAppointmentScheduled } from '@/services/notifications'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -351,6 +352,14 @@ export default function PatientNewAppointment() {
     } finally {
       setIsSubmitting(false)
       setConfirmedSuccess(true)
+
+      // Disparar notificação push no navegador para nova consulta agendada
+      notifyAppointmentScheduled(
+        user?.name || 'Você',
+        appointmentDateTime.toISOString(),
+        selectedDoctor?.name,
+      )
+
       toast({
         title: 'Consulta agendada com sucesso!',
         description: `Agendada para ${selectedDate.toLocaleDateString('pt-BR')} às ${selectedTime}.`,

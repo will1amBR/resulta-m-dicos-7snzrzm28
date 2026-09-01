@@ -23,11 +23,16 @@ import {
   getMyNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  requestPushPermission,
+  isPushSupported,
+  isPushEnabled,
+  sendBrowserNotification,
 } from '@/services/notifications'
 import { buildWhatsAppPrescriptionUrl, buildSmsPrescriptionText } from '@/services/prescriptions'
 import { useToast } from '@/hooks/use-toast'
 import { Patient, InAppNotification } from '@/types/clinical'
 import { useNavigate } from 'react-router-dom'
+import { BellRing, Volume2, Sparkles } from 'lucide-react'
 
 export function Header({
   onOpenMobileMenu,
@@ -44,7 +49,46 @@ export function Header({
   const [isOpenSearch, setIsOpenSearch] = useState(false)
   const [notifications, setNotifications] = useState<InAppNotification[]>([])
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    setPushEnabled(isPushEnabled())
+  }, [popoverOpen])
+
+  const handleTogglePush = async () => {
+    if (!isPushSupported()) {
+      toast({
+        title: 'Navegador incompatível',
+        description: 'Seu navegador não suporta a Notification API para push notifications.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (Notification.permission === 'denied') {
+      toast({
+        title: 'Notificações bloqueadas',
+        description: 'Por favor, libere as notificações nas permissões do seu navegador.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const granted = await requestPushPermission()
+    setPushEnabled(granted)
+    if (granted) {
+      sendBrowserNotification({
+        title: '🔔 Notificações Push Ativadas!',
+        body: 'Você receberá alertas em tempo real de novas consultas, renovações de receitas e interações.',
+        data: { url: window.location.pathname },
+      })
+      toast({
+        title: 'Push Notifications ativadas!',
+        description: 'Você receberá avisos em tempo real na área de trabalho e navegador.',
+      })
+    }
+  }
 
   // Load real in-app notifications
   const loadNotifications = async () => {
@@ -178,14 +222,55 @@ export function Header({
                 <Bell className="h-4 w-4 text-blue-600" />
                 Notificações {unreadCount > 0 && `(${unreadCount})`}
               </h4>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={handleMarkAllRead}
-                  className="text-[11px] text-blue-600 hover:text-blue-800 font-medium"
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    className="text-[11px] text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Marcar lidas
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Push Notifications Toggle Banner */}
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`h-7 w-7 rounded-md flex items-center justify-center shrink-0 ${
+                    pushEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
+                  }`}
                 >
-                  Marcar lidas
-                </button>
+                  <BellRing className="h-3.5 w-3.5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900">
+                    {pushEnabled ? 'Push Ativado' : 'Push no Navegador'}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    {pushEnabled
+                      ? 'Alertas de consultas e receitas ativos'
+                      : 'Receba alertas mesmo com a aba fechada'}
+                  </p>
+                </div>
+              </div>
+              {!pushEnabled ? (
+                <Button
+                  size="sm"
+                  onClick={handleTogglePush}
+                  className="h-7 text-[10px] px-2.5 bg-blue-600 hover:bg-blue-700 font-bold shrink-0 text-white"
+                >
+                  Ativar
+                </Button>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] text-emerald-700 bg-emerald-50 border-emerald-200"
+                >
+                  Ativo ✓
+                </Badge>
               )}
             </div>
 

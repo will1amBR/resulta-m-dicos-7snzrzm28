@@ -265,6 +265,15 @@ export default function PatientRecords() {
           <Button variant="outline" size="sm" onClick={toggleAll} className="text-xs">
             {events.every((e) => expandedEvents[e.id]) ? 'Recolher todos' : 'Expandir todos'}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs flex items-center gap-1.5"
+          >
+            <Download className="h-3.5 w-3.5 text-blue-600" />
+            Imprimir Timeline
+          </Button>
         </div>
       </div>
 

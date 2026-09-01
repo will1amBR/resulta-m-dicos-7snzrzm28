@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { getMyPrescriptions } from '@/services/patient-portal'
 import pb from '@/lib/pocketbase/client'
+import { notifyPrescriptionRenewalRequested } from '@/services/notifications'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -204,6 +205,10 @@ export default function PatientPrescriptions() {
         ),
       )
       setIsSubmittingRenewal(false)
+
+      // Disparar notificação push no navegador
+      notifyPrescriptionRenewalRequested(user?.name || 'Paciente', renewalModalItem.medication)
+
       setRenewalModalItem(null)
       toast({
         title: 'Pedido de renovação enviado!',
