@@ -16,6 +16,7 @@ import Prontuario from './pages/Prontuario'
 import Teleconsulta from './pages/Teleconsulta'
 import Documentos from './pages/Documentos'
 import DoctorReceitas from './pages/DoctorReceitas'
+import DoctorClinicalDocuments from './pages/DoctorClinicalDocuments'
 import PublicPrescriptionVerify from './pages/PublicPrescriptionVerify'
 import Settings from './pages/Settings'
 import AdminCouncils from './pages/AdminCouncils'
@@ -32,6 +33,7 @@ import PatientDocuments from './pages/patient/PatientDocuments'
 import PatientPrescriptions from './pages/patient/PatientPrescriptions'
 import PatientTeleconsulta from './pages/patient/PatientTeleconsulta'
 import PatientProfile from './pages/patient/PatientProfile'
+import PatientAccessControls from './pages/patient/PatientAccessControls'
 
 const App = () => (
   <BrowserRouter>
@@ -49,13 +51,21 @@ const App = () => (
 
           <Route element={<Layout />}>
             <Route
-              path="/dashboard"
+              path="/receitas"
               element={
-                <RoleGuard allow={['doctor', 'admin']}>
-                  <Dashboard />
+                <RoleGuard allow={['doctor', 'clinic']}>
+                  <DoctorReceitas />
                 </RoleGuard>
               }
             />
+            <Route
+              path="/doctor/documentos"
+              element={
+                <RoleGuard allow={['doctor', 'clinic']}>
+                  <DoctorClinicalDocuments />
+                </RoleGuard>
+              }
+            />{' '}
             <Route
               path="/agenda"
               element={
@@ -130,7 +140,6 @@ const App = () => (
               }
             />
             <Route path="/admin/councils" element={<Navigate to="/admin/conselhos" replace />} />
-
             <Route
               path="/clinic"
               element={
@@ -171,7 +180,6 @@ const App = () => (
                 </RoleGuard>
               }
             />
-
             <Route
               path="/patient"
               element={
@@ -217,6 +225,14 @@ const App = () => (
               element={
                 <RoleGuard allow={['patient']}>
                   <PatientTeleconsulta />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/patient/acessos"
+              element={
+                <RoleGuard allow={['patient']}>
+                  <PatientAccessControls />
                 </RoleGuard>
               }
             />

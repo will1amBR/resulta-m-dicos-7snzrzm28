@@ -26,8 +26,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PrescriptionRecord } from '@/types/clinical'
+import { PrescriptionRecord, ClinicalDocument } from '@/types/clinical'
 import { getPrescriptionByVerificationCode, getVerificationUrl } from '@/services/prescriptions'
+import { getClinicalDocumentByVerificationCode } from '@/services/clinical_documents'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { useToast } from '@/hooks/use-toast'
 
@@ -38,6 +39,7 @@ export default function PublicPrescriptionVerify() {
 
   const [inputCode, setInputCode] = useState(routeCode || '')
   const [prescription, setPrescription] = useState<PrescriptionRecord | null>(null)
+  const [clinicalDoc, setClinicalDoc] = useState<ClinicalDocument | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
@@ -58,17 +60,31 @@ export default function PublicPrescriptionVerify() {
     setIsLoading(true)
     setSearched(true)
     try {
+      setPrescription(null)
+      setClinicalDoc(null)
+
+      // 1. Tentar localizar prescrição
       const rx = await getPrescriptionByVerificationCode(trimmed)
-      setPrescription(rx)
-      if (!rx) {
-        toast({
-          title: 'Receita não localizada',
-          description: 'Verifique se o código foi digitado corretamente.',
-          variant: 'destructive',
-        })
+      if (rx) {
+        setPrescription(rx)
+        return
       }
+
+      // 2. Se não for receita, tentar localizar em clinical_documents (Atestado, Laudo, Encaminhamento)
+      const cdoc = await getClinicalDocumentByVerificationCode(trimmed)
+      if (cdoc) {
+        setClinicalDoc(cdoc)
+        return
+      }
+
+      toast({
+        title: 'Documento não localizado',
+        description: 'Verifique se o código foi digitado corretamente.',
+        variant: 'destructive',
+      })
     } catch {
       setPrescription(null)
+      setClinicalDoc(null)
     } finally {
       setIsLoading(false)
     }
@@ -81,10 +97,16 @@ export default function PublicPrescriptionVerify() {
     }
   }, [routeCode])
 
-  const patient = prescription?.expand?.patient_id
-  const doctor = prescription?.expand?.doctor_id
-  const isCertValid = !!prescription?.certificate_validated
-  const currentVerificationCode = prescription?.verification_code || prescription?.id || inputCode
+  const patient = prescription?.expand?.patient_id || clinicalDoc?.expand?.patient
+  const doctor = prescription?.expand?.doctor_id || clinicalDoc?.expand?.doctor
+  const isCertValid = prescription
+    ? !!prescription.certificate_validated
+    : !!clinicalDoc?.certificate_validated
+  const currentVerificationCode =
+    prescription?.verification_code ||
+    clinicalDoc?.verification_code ||
+    prescription?.id ||
+    inputCode
   const verificationUrl = getVerificationUrl(currentVerificationCode)
 
   const handleCopyCode = () => {
@@ -145,11 +167,11 @@ export default function PublicPrescriptionVerify() {
               Consulta Pública de Autenticidade
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Validação de Receita Médica Digital
+              Validação de Documento Clínico & Receita
             </h1>
             <p className="text-xs sm:text-sm text-slate-600">
-              Farmácias, drogarias e pacientes podem verificar a autenticidade, integridade e
-              validade das receitas emitidas pelos profissionais de saúde.
+              Farmácias, empresas, pacientes e órgãos reguladores podem verificar a autenticidade,
+              integridade e validade de receitas, atestados, laudos e declarações emitidos.
             </p>
           </div>
 
@@ -157,7 +179,7 @@ export default function PublicPrescriptionVerify() {
           <Card className="border-slate-200 shadow-sm max-w-2xl mx-auto">
             <CardContent className="p-4 sm:p-6 space-y-3">
               <label className="text-xs font-bold text-slate-700 block">
-                Digite o Código de Verificação da Receita:
+                Digite o Código de Verificação (Receita, Atestado, Laudo ou Encaminhamento):
               </label>
               <form
                 onSubmit={(e) => {
@@ -203,14 +225,14 @@ export default function PublicPrescriptionVerify() {
           </div>
         )}
 
-        {!isLoading && searched && !prescription && (
+        {!isLoading && searched && !prescription && !clinicalDoc && (
           <Card className="border-rose-200 bg-rose-50/40 text-center p-8 max-w-2xl mx-auto">
             <div className="h-12 w-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
               <XCircle className="h-7 w-7" />
             </div>
-            <h3 className="text-base font-bold text-rose-950">Receita Não Encontrada</h3>
+            <h3 className="text-base font-bold text-rose-950">Documento Não Encontrado</h3>
             <p className="text-xs text-rose-800 mt-1 max-w-md mx-auto leading-relaxed">
-              Não encontramos nenhuma prescrição ativa com o código{' '}
+              Não encontramos nenhum documento ou prescrição ativa com o código{' '}
               <strong className="font-mono">{inputCode}</strong>. Verifique se o código foi digitado
               corretamente ou se o documento é autêntico.
             </p>
@@ -227,6 +249,169 @@ export default function PublicPrescriptionVerify() {
           </Card>
         )}
 
+        {/* CASO: DOCUMENTO CLÍNICO (ATESTADO, LAUDO, ENCAMINHAMENTO) */}
+        {!isLoading && clinicalDoc && (
+          <div className="space-y-6">
+            <div
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
+                isCertValid
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                  : 'bg-amber-50 border-amber-300 text-amber-950'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${
+                    isCertValid ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'
+                  }`}
+                >
+                  {isCertValid ? (
+                    <ShieldCheck className="h-6 w-6" />
+                  ) : (
+                    <ShieldAlert className="h-6 w-6" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold">
+                      {clinicalDoc.title} — Documento Autêntico
+                    </h2>
+                    <Badge className="text-[11px] font-bold bg-indigo-600 text-white uppercase">
+                      {clinicalDoc.type}
+                    </Badge>
+                  </div>
+                  <p className="text-xs mt-0.5 opacity-90">
+                    Emitido por profissional médico habilitado e registrado no Conselho Regional.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 print:hidden">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrint}
+                  className="bg-white text-slate-800 text-xs h-9 font-semibold"
+                >
+                  <Printer className="h-4 w-4 mr-1.5 text-slate-600" /> Imprimir Documento
+                </Button>
+              </div>
+            </div>
+
+            <Card className="border-slate-300 shadow-md bg-white overflow-hidden print:border-none print:shadow-none">
+              <div className="p-6 sm:p-8 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-700">
+                      {clinicalDoc.type} Oficial
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {doctor?.name || 'Dr(a). Médico'}
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    CRM: <strong>{doctor?.crm || doctor?.council_number || 'Ativo'}</strong>
+                  </p>
+                </div>
+
+                <div className="text-left sm:text-right space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    Data de Emissão
+                  </span>
+                  <p className="text-xs font-bold text-slate-800">
+                    {clinicalDoc.created
+                      ? new Date(clinicalDoc.created).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : 'Data recente'}
+                  </p>
+                  <span className="text-[11px] font-mono font-bold bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded inline-block">
+                    Cód: {clinicalDoc.verification_code}
+                  </span>
+                </div>
+              </div>
+
+              <CardContent className="p-6 sm:p-8 space-y-6">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Paciente Identificado:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-slate-500">Nome:</span>
+                      <p className="font-bold text-slate-900 text-sm">{patient?.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">CPF:</span>
+                      <p className="font-bold text-slate-900 font-mono">
+                        {patient?.cpf || 'Não informado'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-xl border border-slate-200 bg-white font-serif leading-relaxed text-sm text-slate-900 space-y-4">
+                  <p className="whitespace-pre-line">{clinicalDoc.content}</p>
+
+                  {clinicalDoc.rest_days ? (
+                    <p className="font-sans font-bold text-slate-800 pt-2 border-t">
+                      Repouso recomendado: {clinicalDoc.rest_days} dia(s).
+                    </p>
+                  ) : null}
+
+                  {clinicalDoc.cid10 && (
+                    <p className="font-sans text-xs text-slate-600">
+                      CID-10: <strong>{clinicalDoc.cid10}</strong>
+                    </p>
+                  )}
+
+                  {clinicalDoc.specialty_target && (
+                    <p className="font-sans text-xs text-slate-600">
+                      Especialidade Destino: <strong>{clinicalDoc.specialty_target}</strong>
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-6 border-t-2 border-dashed border-slate-200 mt-6">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white p-2 rounded-xl border border-slate-300 shadow-xs shrink-0">
+                        <QRCodeSVG value={verificationUrl} size={96} />
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                          QR Code de Validação Pública
+                        </span>
+                        <p className="font-bold text-slate-900">Aponte a câmera para consultar</p>
+                        <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
+                          Qualquer órgão ou empresa pode certificar a veracidade deste documento.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-left sm:text-right space-y-1.5 w-full sm:w-auto">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                        Código de Verificação:
+                      </span>
+                      <div className="flex items-center sm:justify-end gap-2">
+                        <span className="font-mono text-sm sm:text-base font-extrabold bg-indigo-100 text-indigo-900 px-3 py-1 rounded-lg border border-indigo-200 tracking-wider">
+                          {clinicalDoc.verification_code}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* CASO: RECEITA MÉDICA */}
         {!isLoading && prescription && (
           <div className="space-y-6">
             {/* Authenticity Banner */}

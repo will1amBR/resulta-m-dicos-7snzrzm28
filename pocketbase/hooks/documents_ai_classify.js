@@ -104,6 +104,70 @@ onRecordAfterCreateSuccess((e) => {
     rec.set('ocr_status', 'concluido')
     $app.save(rec)
 
+    // Se a categoria for exames ou houver texto com parâmetros laboratoriais, tentar extrair marcadores estruturados
+    if (category === 'exames' || (fileName && fileName.toLowerCase().includes('exame'))) {
+      try {
+        const markerPrompt =
+          'Extraia do seguinte texto ou laudo de exame todos os marcadores laboratoriais numéricos identificados.\n' +
+          'Retorne APENAS um array JSON de marcadores no formato:\n' +
+          '[{"marker_name":"Creatinina Sérica","marker_code":"creatinina","value":1.05,"unit":"mg/dL","reference_range":"0.70 - 1.20","is_abnormal":false}]\n' +
+          'Codes aceitos prioritários: creatinina, hemoglobina, tsh, glicemia, colesterol_total, hba1c, leucocitos, plaquetas, potassio, tgo, tgp, ureia, acido_urico.\n' +
+          'Texto do exame:\n' +
+          (ocrText || fileName)
+
+        const markerRes = $ai.chat({
+          model: 'fast',
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Você é um extrator de parâmetros laboratoriais clínicos. Retorne apenas JSON sem markdown.',
+            },
+            { role: 'user', content: markerPrompt },
+          ],
+        })
+
+        if (
+          markerRes &&
+          markerRes.choices &&
+          markerRes.choices[0] &&
+          markerRes.choices[0].message
+        ) {
+          const mContent = markerRes.choices[0].message.content || ''
+          const mStart = mContent.indexOf('[')
+          const mEnd = mContent.lastIndexOf(']')
+          if (mStart >= 0 && mEnd > mStart) {
+            const parsedMarkers = JSON.parse(mContent.substring(mStart, mEnd + 1))
+            if (Array.isArray(parsedMarkers) && parsedMarkers.length > 0) {
+              const labCol = $app.findCollectionByNameOrId('lab_results')
+              const nowIso = new Date().toISOString()
+              for (let mi = 0; mi < parsedMarkers.length; mi++) {
+                const mk = parsedMarkers[mi]
+                if (mk.marker_name && typeof mk.value === 'number') {
+                  const labRec = new Record(labCol)
+                  labRec.set('patient', rec.getString('patient'))
+                  labRec.set('marker_name', mk.marker_name)
+                  labRec.set(
+                    'marker_code',
+                    mk.marker_code || mk.marker_name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                  )
+                  labRec.set('value', mk.value)
+                  labRec.set('unit', mk.unit || '')
+                  labRec.set('reference_range', mk.reference_range || '')
+                  labRec.set('is_abnormal', !!mk.is_abnormal)
+                  labRec.set('collected_at', nowIso)
+                  labRec.set('source_document_name', fileName || 'Documento OCR')
+                  $app.save(labRec)
+                }
+              }
+            }
+          }
+        }
+      } catch (markErr) {
+        console.log('Error extracting markers from document: ' + markErr.message)
+      }
+    }
+
     // Criar notificação para o paciente ou médico informando da categorização
     const patientId = rec.getString('patient')
     if (patientId) {

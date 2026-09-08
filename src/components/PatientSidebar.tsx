@@ -9,6 +9,7 @@ import {
   UserCircle,
   LogOut,
   Heart,
+  Shield,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -25,6 +26,7 @@ export function PatientSidebar() {
     { to: '/patient/documentos', label: 'Meus Documentos', icon: FolderOpen },
     { to: '/patient/prescricoes', label: 'Minhas Prescrições', icon: Pill },
     { to: '/patient/teleconsulta', label: 'Teleconsulta', icon: Video },
+    { to: '/patient/acessos', label: 'Controles de Acesso (24h)', icon: Shield },
     { to: '/patient/perfil', label: 'Meu Perfil', icon: UserCircle },
   ]
 

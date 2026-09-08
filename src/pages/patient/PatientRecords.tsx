@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { getMyMedicalRecords } from '@/services/patient-portal'
 import { MedicalRecord } from '@/types/clinical'
 import { Badge } from '@/components/ui/badge'
+import { LabResultsEvolution } from '@/components/LabResultsEvolution'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -276,6 +277,13 @@ export default function PatientRecords() {
           </Button>
         </div>
       </div>
+
+      {/* Curva de Evolução Temporal de Marcadores e Exames (ClueMed) */}
+      <LabResultsEvolution
+        patientId={patientId || '6ct3xtcobw4xmkm'}
+        patientName={user?.name || 'Paciente'}
+        readOnly={true}
+      />
 
       {/* Filter Tabs by Type */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">

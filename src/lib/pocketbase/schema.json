@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T07:43:26.934Z",
+  "generatedAt": "2026-09-08T03:43:04.787Z",
   "collections": [
     {
       "name": "users",
@@ -873,6 +873,473 @@
       "indexes": [
         "CREATE INDEX idx_teleconsulta_signals_appt ON teleconsulta_signals (appointment, created DESC)"
       ]
+    },
+    {
+      "name": "access_grants",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "granted_to_user",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "target_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "target_role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["doctor", "clinic", "other"]
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["ativa", "pendente", "revogada", "expirada", "negada"]
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "expires_at",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "revoked_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_ag_patient ON access_grants (patient)",
+        "CREATE INDEX idx_ag_user ON access_grants (granted_to_user)",
+        "CREATE INDEX idx_ag_status ON access_grants (status)"
+      ]
+    },
+    {
+      "name": "access_audit_log",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "actor_user",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "actor_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "actor_role",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "action",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["consultou", "concedeu_24h", "revogou", "solicitou", "negou"]
+        },
+        {
+          "name": "resource",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ip_address",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_aal_patient ON access_audit_log (patient)",
+        "CREATE INDEX idx_aal_created ON access_audit_log (created)"
+      ]
+    },
+    {
+      "name": "clinical_documents",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "doctor",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "type",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["atestado", "laudo", "encaminhamento", "declaracao"]
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cid10",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "rest_days",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "specialty_target",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "verification_code",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "certificate_validated",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["emitido", "enviado", "cancelado"]
+        },
+        {
+          "name": "sent_via",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["email", "whatsapp", "sms", "nenhum"]
+        },
+        {
+          "name": "sent_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_cd_verification_code ON clinical_documents (verification_code)",
+        "CREATE INDEX idx_cd_patient ON clinical_documents (patient)",
+        "CREATE INDEX idx_cd_doctor ON clinical_documents (doctor)"
+      ]
+    },
+    {
+      "name": "lab_results",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "marker_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "marker_code",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "reference_range",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "is_abnormal",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "collected_at",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "source_document_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_lr_patient_marker ON lab_results (patient, marker_code)",
+        "CREATE INDEX idx_lr_patient_date ON lab_results (patient, collected_at)"
+      ]
+    },
+    {
+      "name": "specialty_templates",
+      "type": "base",
+      "apiRules": {
+        "list": "",
+        "view": "",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "specialty",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "soap_subjective",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "soap_objective",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "soap_assessment",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "soap_plan",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "default_cid10",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "default_medications",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "checklist_items",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "is_system",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_st_specialty ON specialty_templates (specialty)"]
     }
   ]
 }

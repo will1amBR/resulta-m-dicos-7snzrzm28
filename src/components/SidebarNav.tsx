@@ -14,6 +14,7 @@ import {
   Stethoscope,
   ShieldCheck,
   Pill,
+  FileCheck,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -37,6 +38,7 @@ export function SidebarNav() {
     { to: '/agenda', label: 'Agenda', icon: Calendar },
     { to: '/pacientes', label: 'Pacientes', icon: Users },
     { to: '/doctor/receitas', label: 'Receitas', icon: Pill },
+    { to: '/doctor/documentos', label: 'Atestados & Laudos', icon: FileCheck },
     { to: '/prontuario', label: 'Prontuário (SOAP)', icon: FileText },
     { to: '/teleconsulta', label: 'Teleconsulta', icon: Video },
     { to: '/documentos', label: 'Documentos', icon: FolderOpen },

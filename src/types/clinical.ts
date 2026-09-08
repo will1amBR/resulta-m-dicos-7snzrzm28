@@ -188,3 +188,116 @@ export interface TeleconsultaMessage extends RecordModel {
   sender_role: 'doctor' | 'patient' | 'system'
   text: string
 }
+
+export type AccessGrantStatus = 'ativa' | 'pendente' | 'revogada' | 'expirada' | 'negada'
+
+export interface AccessGrant {
+  id: string
+  patient: string
+  granted_to_user?: string
+  target_name?: string
+  target_role?: 'doctor' | 'clinic' | 'other'
+  scope?: string // ex: "prontuario,exames,prescricoes" ou "completo"
+  status: AccessGrantStatus
+  reason?: string
+  expires_at: string
+  revoked_at?: string
+  created?: string
+  updated?: string
+  expand?: {
+    patient?: Patient
+    granted_to_user?: {
+      id: string
+      name: string
+      role?: string
+      crm?: string
+    }
+  }
+}
+
+export interface AccessAuditLog {
+  id: string
+  patient: string
+  actor_user?: string
+  actor_name?: string
+  actor_role?: string
+  action: 'consultou' | 'concedeu_24h' | 'revogou' | 'solicitou' | 'negou'
+  resource: string
+  details?: string
+  ip_address?: string
+  created?: string
+  updated?: string
+}
+
+export type ClinicalDocumentType = 'atestado' | 'laudo' | 'encaminhamento' | 'declaracao'
+
+export interface ClinicalDocument {
+  id: string
+  doctor: string
+  patient: string
+  type: ClinicalDocumentType
+  title: string
+  content: string
+  cid10?: string
+  rest_days?: number
+  specialty_target?: string
+  verification_code: string
+  certificate_validated?: boolean
+  status?: 'emitido' | 'enviado' | 'cancelado'
+  sent_via?: 'email' | 'whatsapp' | 'sms' | 'nenhum'
+  sent_at?: string
+  created?: string
+  updated?: string
+  expand?: {
+    doctor?: {
+      id: string
+      name: string
+      crm?: string
+      council_type?: string
+      council_number?: string
+      certificate_status?: CertificateStatus
+    }
+    patient?: Patient
+  }
+}
+
+export interface LabResult {
+  id: string
+  patient: string
+  marker_name: string
+  marker_code: string
+  value: number
+  unit: string
+  reference_range?: string
+  is_abnormal?: boolean
+  collected_at: string
+  source_document_name?: string
+  created?: string
+  updated?: string
+}
+
+export interface SpecialtyTemplate {
+  id: string
+  name: string
+  specialty: string
+  description?: string
+  soap_subjective?: string
+  soap_objective?: string
+  soap_assessment?: string
+  soap_plan?: string
+  default_cid10?: CidCode[]
+  default_medications?: PrescribedMedication[]
+  checklist_items?: string[]
+  is_system?: boolean
+  created?: string
+  updated?: string
+}
+
+export interface SoapTranscriptionResult {
+  soap_subjective: string
+  soap_objective: string
+  soap_assessment: string
+  soap_plan: string
+  suggested_cids?: CidCode[]
+  suggested_medications?: PrescribedMedication[]
+}

@@ -12,8 +12,15 @@ import { Badge } from '@/components/ui/badge'
 import { MedicationAutocomplete } from '@/components/MedicationAutocomplete'
 import { CidAutocomplete } from '@/components/CidAutocomplete'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
+import { LabResultsEvolution } from '@/components/LabResultsEvolution'
+import { ClinicalCalculators } from '@/components/ClinicalCalculators'
+import { SoapTranscriptionWidget } from '@/components/SoapTranscriptionWidget'
+import { AccessGrantModal } from '@/components/AccessGrantModal'
+import { getSpecialtyTemplates } from '@/services/specialty_templates'
+import { SpecialtyTemplate } from '@/types/clinical'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { ShieldCheck, Sparkles, LayoutTemplate, Calculator, KeyRound } from 'lucide-react'
 
 export default function Prontuario() {
   const { activePatient } = useActivePatient()
@@ -24,6 +31,9 @@ export default function Prontuario() {
   const [objective, setObjective] = useState('')
   const [assessment, setAssessment] = useState('')
   const [plan, setPlan] = useState('')
+  const [specialtyTemplates, setSpecialtyTemplates] = useState<SpecialtyTemplate[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+  const [accessModalOpen, setAccessModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [prescribedMeds, setPrescribedMeds] = useState<PrescribedMedication[]>([])
   const [cid10Codes, setCid10Codes] = useState<CidCode[]>([])
@@ -39,6 +49,35 @@ export default function Prontuario() {
         .catch(() => {})
     }
   }, [activePatient])
+
+  useEffect(() => {
+    getSpecialtyTemplates()
+      .then(setSpecialtyTemplates)
+      .catch(() => {})
+  }, [])
+
+  const handleApplyTemplate = (tmplId: string) => {
+    setSelectedTemplateId(tmplId)
+    const tmpl = specialtyTemplates.find((t) => t.id === tmplId)
+    if (!tmpl) return
+
+    if (tmpl.soap_subjective) setSubjective(tmpl.soap_subjective)
+    if (tmpl.soap_objective) setObjective(tmpl.soap_objective)
+    if (tmpl.soap_assessment) setAssessment(tmpl.soap_assessment)
+    if (tmpl.soap_plan) setPlan(tmpl.soap_plan)
+
+    if (tmpl.default_cid10 && tmpl.default_cid10.length > 0) {
+      setCid10Codes(tmpl.default_cid10)
+    }
+    if (tmpl.default_medications && tmpl.default_medications.length > 0) {
+      setPrescribedMeds(tmpl.default_medications)
+    }
+
+    toast({
+      title: `Modelo aplicado: ${tmpl.name}`,
+      description: 'Estrutura SOAP, CIDs e condutas preenchidos automaticamente.',
+    })
+  }
 
   useEffect(() => {
     loadRecords()
@@ -159,22 +198,117 @@ export default function Prontuario() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg border shadow-subtle no-print">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border shadow-subtle no-print gap-3">
         <div>
           <h1 className="font-bold text-lg text-slate-900">Prontuário Completo</h1>
           <p className="text-xs text-slate-500">
             Paciente: <strong>{activePatient.name}</strong> (CPF: {activePatient.cpf})
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.print()}
-          className="text-xs no-print"
-        >
-          <Printer className="h-4 w-4 mr-1" /> 📄 Exportar Prontuário (PDF)
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAccessModalOpen(true)}
+            className="text-xs border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 no-print"
+          >
+            <KeyRound className="h-3.5 w-3.5 mr-1" /> Concessão 24h (Modelo Aberto)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-xs no-print"
+          >
+            <Printer className="h-4 w-4 mr-1" /> 📄 Exportar (PDF)
+          </Button>
+        </div>
       </div>
+
+      {/* Barra de Modelos de Prontuário por Especialidade */}
+      <div className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+        <div className="flex items-center gap-2">
+          <LayoutTemplate className="h-4 w-4 text-indigo-600 shrink-0" />
+          <span className="text-xs font-bold text-slate-800">
+            Modelos de Prontuário por Especialidade:
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+          {specialtyTemplates.map((tmpl) => (
+            <Button
+              key={tmpl.id}
+              type="button"
+              variant={selectedTemplateId === tmpl.id ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleApplyTemplate(tmpl.id)}
+              className={`text-xs h-8 whitespace-nowrap ${
+                selectedTemplateId === tmpl.id ? 'bg-indigo-600 text-white' : ''
+              }`}
+            >
+              {tmpl.specialty}: {tmpl.name.split(' - ')[0]}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Transcrição da Consulta -> SOAP por IA (ClueMed) */}
+      <div className="no-print">
+        <SoapTranscriptionWidget
+          patientName={activePatient?.name}
+          doctorName={user?.name}
+          onApplySoap={(result) => {
+            if (result.soap_subjective) setSubjective(result.soap_subjective)
+            if (result.soap_objective) setObjective(result.soap_objective)
+            if (result.soap_assessment) setAssessment(result.soap_assessment)
+            if (result.soap_plan) setPlan(result.soap_plan)
+            if (result.suggested_cids && result.suggested_cids.length > 0) {
+              setCid10Codes((prev) => [...prev, ...(result.suggested_cids || [])])
+            }
+            if (result.suggested_medications && result.suggested_medications.length > 0) {
+              setPrescribedMeds((prev) => [...prev, ...(result.suggested_medications || [])])
+            }
+          }}
+        />
+      </div>
+
+      {/* Curva de Evolução Temporal de Marcadores e Exames Laboratoriais (ClueMed) */}
+      <div className="no-print">
+        <LabResultsEvolution patientId={activePatient.id} patientName={activePatient.name} />
+      </div>
+
+      {/* Calculadoras Clínicas (Cockcroft-Gault & IMC) */}
+      <div className="no-print">
+        <ClinicalCalculators
+          initialWeight={74}
+          initialHeight={1.72}
+          initialAge={45}
+          initialGender="male"
+          initialCreatinine={1.05}
+          onApplyClearance={(clearance, stage) => {
+            setObjective(
+              (prev) =>
+                `${prev ? prev + '\n' : ''}Clearance Creatinina (Cockcroft-Gault): ${clearance} mL/min.`,
+            )
+            setAssessment((prev) => `${prev ? prev + '\n' : ''}Avaliação renal: ${stage}.`)
+            toast({ title: 'Clearance adicionado ao SOAP!' })
+          }}
+          onApplyImc={(imc, classification) => {
+            setObjective(
+              (prev) => `${prev ? prev + '\n' : ''}IMC: ${imc} kg/m² (${classification}).`,
+            )
+            toast({ title: 'IMC adicionado ao Objetivo do SOAP!' })
+          }}
+        />
+      </div>
+
+      {/* Modal de Concessão de Acesso 24h */}
+      <AccessGrantModal
+        open={accessModalOpen}
+        onOpenChange={setAccessModalOpen}
+        patient={activePatient}
+        doctorUser={user ? { id: user.id, name: user.name, role: user.role } : null}
+      />
 
       <div className="print-only hidden">
         <h1 style={{ fontSize: '18pt', fontWeight: 'bold' }}>Prontuário Médico</h1>
