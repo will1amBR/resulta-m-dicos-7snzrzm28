@@ -26,6 +26,10 @@ import ClinicTeam from './pages/clinic/ClinicTeam'
 import ClinicAgenda from './pages/clinic/ClinicAgenda'
 import ClinicPatients from './pages/clinic/ClinicPatients'
 import ClinicSettings from './pages/clinic/ClinicSettings'
+import ClinicEstoque from './pages/clinic/ClinicEstoque'
+import StaffLimpeza from './pages/staff/StaffLimpeza'
+import ClinicWhatsApp from './pages/clinic/ClinicWhatsApp'
+import ClinicCrm from './pages/clinic/ClinicCrm'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import PatientNewAppointment from './pages/patient/PatientNewAppointment'
 import PatientRecords from './pages/patient/PatientRecords'
@@ -51,13 +55,13 @@ const App = () => (
 
           <Route element={<Layout />}>
             <Route
-              path="/dashboard"
+              path="/admin/conselhos"
               element={
-                <RoleGuard allow={['doctor', 'admin']}>
-                  <Dashboard />
+                <RoleGuard allow={['admin', 'clinic', 'secretaria']}>
+                  <AdminCouncils />
                 </RoleGuard>
               }
-            />
+            />{' '}
             <Route path="/doctor" element={<Navigate to="/dashboard" replace />} />
             <Route
               path="/doctor/documentos"
@@ -160,7 +164,7 @@ const App = () => (
             <Route
               path="/clinic/agenda"
               element={
-                <RoleGuard allow={['clinic', 'admin']}>
+                <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
                   <ClinicAgenda />
                 </RoleGuard>
               }
@@ -168,7 +172,7 @@ const App = () => (
             <Route
               path="/clinic/pacientes"
               element={
-                <RoleGuard allow={['clinic', 'admin']}>
+                <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
                   <ClinicPatients />
                 </RoleGuard>
               }
@@ -178,6 +182,38 @@ const App = () => (
               element={
                 <RoleGuard allow={['clinic', 'admin']}>
                   <ClinicSettings />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/clinic/estoque"
+              element={
+                <RoleGuard allow={['clinic', 'secretaria', 'admin', 'doctor']}>
+                  <ClinicEstoque />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/clinic/whatsapp"
+              element={
+                <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
+                  <ClinicWhatsApp />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/clinic/crm"
+              element={
+                <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
+                  <ClinicCrm />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/staff/limpeza"
+              element={
+                <RoleGuard allow={['clinic', 'faxineira', 'secretaria', 'admin']}>
+                  <StaffLimpeza />
                 </RoleGuard>
               }
             />

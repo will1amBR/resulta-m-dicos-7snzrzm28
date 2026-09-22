@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { FileText, Printer, Save, Pill, ClipboardList, Activity } from 'lucide-react'
 import { useActivePatient } from '@/contexts/active-patient-context'
 import { getMedicalRecordsForPatient, createMedicalRecord } from '@/services/medical_records'
+import { getClinicSupplies, consumeSuppliesForProcedure } from '@/services/supplies'
+import { ClinicSupply } from '@/types/clinical'
+import { Boxes } from 'lucide-react'
 import { analyzeMedications } from '@/services/medications'
 import { MedicalRecord, MedicationAlert, PrescribedMedication, CidCode } from '@/types/clinical'
 import { Button } from '@/components/ui/button'
@@ -32,6 +35,8 @@ export default function Prontuario() {
   const [objective, setObjective] = useState('')
   const [assessment, setAssessment] = useState('')
   const [plan, setPlan] = useState('')
+  const [suppliesList, setSuppliesList] = useState<ClinicSupply[]>([])
+  const [selectedSupplies, setSelectedSupplies] = useState<Record<string, number>>({})
   const [specialtyTemplates, setSpecialtyTemplates] = useState<SpecialtyTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [accessModalOpen, setAccessModalOpen] = useState(false)
@@ -150,11 +155,30 @@ export default function Prontuario() {
     setProcedureInput('')
   }
 
+  useEffect(() => {
+    getClinicSupplies()
+      .then((list) => setSuppliesList(list))
+      .catch(() => {})
+  }, [])
+
   const handleSave = async () => {
     if (!activePatient || !user) return
     setLoading(true)
     setAlertsLoading(true)
     try {
+      // Baixa automática dos insumos marcados para este atendimento
+      const usedSupplies = Object.entries(selectedSupplies)
+        .filter(([_, qty]) => qty > 0)
+        .map(([supplyId, quantity]) => ({ supplyId, quantity }))
+
+      if (usedSupplies.length > 0) {
+        await consumeSuppliesForProcedure(
+          usedSupplies,
+          activePatient.id,
+          assessment ? `Consulta: ${assessment.slice(0, 40)}` : 'Atendimento Médico',
+        )
+      }
+
       await createMedicalRecord({
         patient: activePatient.id,
         doctor: user.id,

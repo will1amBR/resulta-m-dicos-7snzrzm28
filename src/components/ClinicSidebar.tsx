@@ -7,6 +7,10 @@ import {
   Settings,
   LogOut,
   Stethoscope,
+  Boxes,
+  MessageSquare,
+  Kanban,
+  Sparkles,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -16,14 +20,64 @@ export function ClinicSidebar() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
 
-  const navItems = [
-    { to: '/clinic', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/clinic/equipe', label: 'Equipe Médica', icon: UserCog },
-    { to: '/clinic/agenda', label: 'Agenda', icon: Calendar },
-    { to: '/clinic/pacientes', label: 'Pacientes', icon: Users },
-    { to: '/admin/conselhos', label: 'Aprovações & Secretaria', icon: Stethoscope },
-    { to: '/clinic/configuracoes', label: 'Configurações', icon: Settings },
+  const { userRole } = useAuth()
+  const allNavItems = [
+    { to: '/clinic', label: 'Dashboard', icon: LayoutDashboard, roles: ['clinic', 'admin'] },
+    {
+      to: '/clinic/agenda',
+      label: 'Agenda da Clínica',
+      icon: Calendar,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/clinic/whatsapp',
+      label: 'Portal WhatsApp',
+      icon: MessageSquare,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/clinic/crm',
+      label: 'CRM de Pacientes',
+      icon: Kanban,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/clinic/estoque',
+      label: 'Estoque de Insumos',
+      icon: Boxes,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/staff/limpeza',
+      label: 'Rotina de Limpeza',
+      icon: Sparkles,
+      roles: ['clinic', 'faxineira', 'secretaria', 'admin'],
+    },
+    {
+      to: '/clinic/pacientes',
+      label: 'Pacientes',
+      icon: Users,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/admin/conselhos',
+      label: 'Aprovações & Secretaria',
+      icon: Stethoscope,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    { to: '/clinic/equipe', label: 'Equipe Médica', icon: UserCog, roles: ['clinic', 'admin'] },
+    {
+      to: '/clinic/configuracoes',
+      label: 'Configurações',
+      icon: Settings,
+      roles: ['clinic', 'admin'],
+    },
   ]
+
+  const navItems = allNavItems.filter((item) => {
+    if (!item.roles) return true
+    return item.roles.includes(userRole || 'clinic')
+  })
 
   const handleSignOut = () => {
     signOut()

@@ -29,8 +29,10 @@ export default function Layout() {
     return <Navigate to="/entrar" replace />
   }
 
+  const isClinicStaff =
+    userRole === 'clinic' || userRole === 'secretaria' || userRole === 'faxineira'
   const Sidebar =
-    userRole === 'patient' ? PatientSidebar : userRole === 'clinic' ? ClinicSidebar : SidebarNav
+    userRole === 'patient' ? PatientSidebar : isClinicStaff ? ClinicSidebar : SidebarNav
 
   return (
     <ActivePatientProvider>

@@ -26,7 +26,9 @@ interface AuthContextType {
   isDemoMode: boolean
   signUp: (data: SignUpData) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  demoSignIn: (role: 'doctor' | 'clinic' | 'patient') => Promise<{ error: any }>
+  demoSignIn: (
+    role: 'doctor' | 'clinic' | 'patient' | 'secretaria' | 'faxineira',
+  ) => Promise<{ error: any }>
   signOut: () => void
   loading: boolean
   refreshUser: () => Promise<void>
@@ -136,10 +138,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const demoSignIn = async (role: 'doctor' | 'clinic' | 'patient') => {
+  const demoSignIn = async (role: 'doctor' | 'clinic' | 'patient' | 'secretaria' | 'faxineira') => {
     const demoCreds = {
       doctor: { email: 'demo.medico@resulta.med', password: 'Skip@Pass' },
       clinic: { email: 'demo.clinica@resulta.med', password: 'Skip@Pass' },
+      secretaria: { email: 'demo.secretaria@resulta.med', password: 'Skip@Pass' },
+      faxineira: { email: 'demo.faxineira@resulta.med', password: 'Skip@Pass' },
       patient: { email: 'demo.paciente@resulta.med', password: 'Skip@Pass' },
     }
     try {

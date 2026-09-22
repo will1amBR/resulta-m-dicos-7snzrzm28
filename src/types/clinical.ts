@@ -97,7 +97,116 @@ export interface Medication {
 
 export type CouncilType = 'CRM' | 'CRN' | 'CRP' | 'CRO' | 'COREN' | 'CREFITO'
 
-export type UserRole = 'doctor' | 'clinic' | 'patient' | 'admin'
+export type UserRole = 'doctor' | 'clinic' | 'patient' | 'admin' | 'secretaria' | 'faxineira'
+
+export interface ClinicSupply {
+  id: string
+  name: string
+  category?: string
+  quantity: number
+  min_quantity: number
+  unit: string
+  location?: string
+  cost_price?: number
+  created?: string
+  updated?: string
+}
+
+export type SupplyMovementType = 'entrada' | 'saida_atendimento' | 'ajuste' | 'descarte'
+
+export interface ClinicSupplyMovement {
+  id: string
+  supply: string
+  type: SupplyMovementType
+  quantity: number
+  reason?: string
+  patient?: string
+  user?: string
+  batch_number?: string
+  date?: string
+  created?: string
+  updated?: string
+  expand?: {
+    supply?: ClinicSupply
+    patient?: Patient
+    user?: { id: string; name: string; role?: string }
+  }
+}
+
+export interface CleaningChecklistItem {
+  area: string
+  task: string
+  done: boolean
+  time?: string
+}
+
+export interface CleaningChecklist {
+  id: string
+  date: string
+  shift: 'manha' | 'tarde' | 'noite'
+  staff?: string
+  items: CleaningChecklistItem[]
+  status: 'pendente' | 'em_andamento' | 'concluido'
+  notes?: string
+  created?: string
+  updated?: string
+  expand?: {
+    staff?: { id: string; name: string; email?: string }
+  }
+}
+
+export type WhatsAppMessageType =
+  | 'confirmacao_consulta'
+  | 'lembrete_consulta'
+  | 'envio_documento'
+  | 'aniversario'
+  | 'retorno_agendado'
+  | 'outro'
+
+export interface WhatsAppQueueItem {
+  id: string
+  phone: string
+  recipient_name: string
+  patient?: string
+  type: WhatsAppMessageType
+  message: string
+  status: 'pendente' | 'enviada' | 'falha'
+  scheduled_for?: string
+  sent_at?: string
+  meta_api_message_id?: string
+  notes?: string
+  created?: string
+  updated?: string
+  expand?: {
+    patient?: Patient
+  }
+}
+
+export type CrmStage =
+  | 'lead_novo'
+  | 'primeiro_contato'
+  | 'agendamento_em_negociacao'
+  | 'paciente_ativo'
+  | 'inativo'
+
+export interface CrmLead {
+  id: string
+  name: string
+  phone?: string
+  email?: string
+  interest_specialty?: string
+  stage: CrmStage
+  patient?: string
+  source?: string
+  notes?: string
+  estimated_value?: number
+  last_contact_at?: string
+  created?: string
+  updated?: string
+  expand?: {
+    patient?: Patient
+  }
+}
 
 export interface ClinicStats {
   doctorCount: number

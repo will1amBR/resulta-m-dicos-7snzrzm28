@@ -4,8 +4,10 @@ import { useAuth } from '@/hooks/use-auth'
 
 const HOME_ROUTES: Record<string, string> = {
   doctor: '/dashboard',
-  admin: '/dashboard',
+  admin: '/admin/conselhos',
   clinic: '/clinic',
+  secretaria: '/clinic/agenda',
+  faxineira: '/staff/limpeza',
   patient: '/patient',
 }
 

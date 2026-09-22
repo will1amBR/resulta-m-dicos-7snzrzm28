@@ -38,17 +38,26 @@ export default function Login() {
     }
   }
 
-  const handleDemo = async (role: 'doctor' | 'clinic' | 'patient') => {
+  const handleDemo = async (role: 'doctor' | 'clinic' | 'patient' | 'secretaria' | 'faxineira') => {
     setDemoLoading(role)
     const { error: err } = await demoSignIn(role)
     setDemoLoading(null)
     if (err) {
       setError('Conta demo indisponível. Tente novamente.')
     } else {
-      navigate(role === 'clinic' ? '/clinic' : role === 'patient' ? '/patient' : '/dashboard')
+      if (role === 'secretaria') {
+        navigate('/clinic/agenda')
+      } else if (role === 'faxineira') {
+        navigate('/staff/limpeza')
+      } else if (role === 'clinic') {
+        navigate('/clinic')
+      } else if (role === 'patient') {
+        navigate('/patient')
+      } else {
+        navigate('/dashboard')
+      }
     }
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white/95 backdrop-blur border-slate-200 shadow-2xl">
@@ -124,35 +133,60 @@ export default function Login() {
 
           <div className="space-y-2">
             <p className="text-xs text-center text-slate-500 font-medium">Entrar como demo</p>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 disabled={demoLoading === 'doctor'}
                 onClick={() => handleDemo('doctor')}
-                className="w-full border-blue-200 hover:bg-blue-50 text-xs"
+                className="border-blue-200 hover:bg-blue-50 text-xs h-8"
               >
-                {demoLoading === 'doctor' ? 'Entrando...' : 'Sou médico (demo)'}
+                {demoLoading === 'doctor' ? '...' : 'Médico'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 disabled={demoLoading === 'clinic'}
                 onClick={() => handleDemo('clinic')}
-                className="w-full border-emerald-200 hover:bg-emerald-50 text-xs"
+                className="border-teal-200 hover:bg-teal-50 text-xs h-8"
               >
-                {demoLoading === 'clinic' ? 'Entrando...' : 'Sou clínica (demo)'}
+                {demoLoading === 'clinic' ? '...' : 'Clínica'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 disabled={demoLoading === 'patient'}
                 onClick={() => handleDemo('patient')}
-                className="w-full border-violet-200 hover:bg-violet-50 text-xs"
+                className="border-violet-200 hover:bg-violet-50 text-xs h-8"
               >
-                {demoLoading === 'patient' ? 'Entrando...' : 'Sou paciente (demo)'}
+                {demoLoading === 'patient' ? '...' : 'Paciente'}
               </Button>
             </div>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={demoLoading === 'secretaria'}
+                onClick={() => handleDemo('secretaria')}
+                className="border-emerald-300 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 font-semibold text-xs h-8"
+              >
+                {demoLoading === 'secretaria' ? '...' : '👩‍💼 Secretária (demo)'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={demoLoading === 'faxineira'}
+                onClick={() => handleDemo('faxineira')}
+                className="border-cyan-300 text-cyan-800 bg-cyan-50/70 hover:bg-cyan-100 font-semibold text-xs h-8"
+              >
+                {demoLoading === 'faxineira' ? '...' : '🧹 Limpeza (demo)'}
+              </Button>
+            </div>{' '}
           </div>
         </CardContent>
 
