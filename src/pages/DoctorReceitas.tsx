@@ -64,6 +64,7 @@ import { createNotification } from '@/services/notifications'
 import { CertificateStatusBadge } from '@/components/CertificateStatusBadge'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
 import { PrescriptionSendModal } from '@/components/PrescriptionSendModal'
+import { PharmacyPrescriptionPDFView } from '@/components/PharmacyPrescriptionPDFView'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { notifyMedicationInteractionAlert } from '@/services/notifications'
 import { useNavigate } from 'react-router-dom'
@@ -128,6 +129,7 @@ export default function DoctorReceitas() {
 
   // View Details Modal / Print Preview Modal
   const [viewDetailsRx, setViewDetailsRx] = useState<PrescriptionRecord | null>(null)
+  const [pdfPreviewRx, setPdfPreviewRx] = useState<PrescriptionRecord | null>(null)
   const [copiedRxCode, setCopiedRxCode] = useState<string | null>(null)
 
   // Synchronize active patient if already selected globally
@@ -1020,10 +1022,20 @@ export default function DoctorReceitas() {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => setPdfPreviewRx(rx)}
+                            className="text-xs h-8 text-slate-700 bg-slate-50 hover:bg-slate-100 font-semibold"
+                            title="Versão em PDF otimizada para farmácias e dispensação"
+                          >
+                            <Printer className="h-3.5 w-3.5 mr-1 text-blue-600" /> PDF Farmácia
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setViewDetailsRx(rx)}
                             className="text-xs h-8 text-slate-700"
                           >
-                            <Eye className="h-3.5 w-3.5 mr-1" /> Ver Receita & QR Code
+                            <Eye className="h-3.5 w-3.5 mr-1" /> Ver Detalhes
                           </Button>
 
                           <Button
@@ -1207,6 +1219,16 @@ export default function DoctorReceitas() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
+                  setPdfPreviewRx(viewDetailsRx)
+                }}
+                className="text-xs text-blue-700 border-blue-200 bg-blue-50/50"
+              >
+                <Printer className="h-3.5 w-3.5 mr-1" /> Versão PDF Farmácia
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
                   const code = viewDetailsRx.verification_code || viewDetailsRx.id
                   window.open(getVerificationUrl(code), '_blank')
                 }}
@@ -1233,6 +1255,62 @@ export default function DoctorReceitas() {
                 className="bg-blue-600 text-white text-xs font-bold"
               >
                 <Send className="h-3.5 w-3.5 mr-1" /> Enviar ao Paciente
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Modal de Impressão / 2ª Via PDF Farmácia */}
+      {pdfPreviewRx && (
+        <Dialog open={!!pdfPreviewRx} onOpenChange={() => setPdfPreviewRx(null)}>
+          <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto">
+            <DialogHeader className="print:hidden">
+              <div className="flex items-center justify-between pr-4">
+                <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Printer className="h-4 w-4 text-blue-600" /> Versão PDF Otimizada para Farmácias
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-xs">
+                Layout de dispensação com destaque para o código RX-XXXX-XXXX, QR Code, tabela
+                completa de posologia e validação de autenticidade.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-2">
+              <PharmacyPrescriptionPDFView
+                prescription={pdfPreviewRx}
+                doctor={user}
+                patient={pdfPreviewRx.expand?.patient_id}
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 print:hidden border-t pt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const code = pdfPreviewRx.verification_code || pdfPreviewRx.id
+                  window.open(getVerificationUrl(code), '_blank')
+                }}
+                className="text-xs"
+              >
+                <ExternalLink className="h-3.5 w-3.5 mr-1" /> Testar em /consulta-receita
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPdfPreviewRx(null)}
+                className="text-xs"
+              >
+                Fechar
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => window.print()}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+              >
+                <Printer className="h-3.5 w-3.5 mr-1.5" /> Imprimir / Salvar PDF
               </Button>
             </DialogFooter>
           </DialogContent>

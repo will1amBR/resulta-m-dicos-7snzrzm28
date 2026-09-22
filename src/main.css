@@ -123,13 +123,19 @@
     display: block !important;
   }
   body {
-    font-size: 12pt;
-    margin: 1cm;
+    font-size: 11pt;
+    margin: 0.5cm;
     background: white !important;
   }
   main {
     overflow: visible !important;
     padding: 0 !important;
+  }
+  .pharmacy-dispensation-sheet {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }
 

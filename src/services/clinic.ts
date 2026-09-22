@@ -30,6 +30,27 @@ export const getClinicPatients = (search?: string) => {
   return pb.collection('patients').getFullList<Patient>({ filter, sort: '-created' })
 }
 
+/**
+ * Retorna todas as concessões de acesso ativas ou recentes para os médicos e pacientes da clínica
+ */
+export const getClinicAccessGrants = async () => {
+  return pb.collection('access_grants').getFullList({
+    sort: '-created',
+    expand: 'patient,granted_to_user',
+  })
+}
+
+/**
+ * Retorna os logs de auditoria de acessos para supervisão da clínica
+ */
+export const getClinicAccessAuditLogs = async (limit = 30) => {
+  const res = await pb.collection('access_audit_log').getList(1, limit, {
+    sort: '-created',
+    expand: 'patient,actor_user',
+  })
+  return res.items
+}
+
 export const getClinicStats = async (): Promise<ClinicStats> => {
   const now = new Date()
   const todayStr = now.toISOString().slice(0, 10)

@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ClinicReportsModal } from '@/components/ClinicReportsModal'
 import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
+import { ClinicAccessGrantsPanel } from '@/components/ClinicAccessGrantsPanel'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import { ShieldCheck } from 'lucide-react'
@@ -431,6 +432,9 @@ export default function ClinicDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Painel Executivo de Concessões Ativas 24h & Trilha de Auditoria (Modelo Aberto) */}
+      <ClinicAccessGrantsPanel onOpenLgpdReport={() => setIsLgpdModalOpen(true)} />
 
       {/* Tabela de Próximas Consultas com Detalhes Completos */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-subtle">

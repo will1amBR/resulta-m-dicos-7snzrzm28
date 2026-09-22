@@ -30,6 +30,7 @@ import {
   MedicationAlert,
 } from '@/types/clinical'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
+import { DoctorOnboardingTour } from '@/components/DoctorOnboardingTour'
 import { analyzeMedications } from '@/services/medications'
 import { getDoctorPrescriptions } from '@/services/prescriptions'
 import { getDoctorClinicalDocuments } from '@/services/clinical_documents'
@@ -215,6 +216,9 @@ export default function Dashboard() {
 
   return (
     <div className="h-full flex flex-col gap-4">
+      {/* Onboarding guiado para médicos novatos */}
+      {user?.role === 'doctor' && <DoctorOnboardingTour user={user} />}
+
       {/* Banner de Metas & Progresso Profissional (ClueMed) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-subtle flex flex-col justify-between">

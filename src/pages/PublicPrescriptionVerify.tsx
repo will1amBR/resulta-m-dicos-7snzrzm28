@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { PrescriptionRecord, ClinicalDocument } from '@/types/clinical'
 import { getPrescriptionByVerificationCode, getVerificationUrl } from '@/services/prescriptions'
 import { getClinicalDocumentByVerificationCode } from '@/services/clinical_documents'
+import { PharmacyPrescriptionPDFView } from '@/components/PharmacyPrescriptionPDFView'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
 import { useToast } from '@/hooks/use-toast'
 
@@ -44,6 +45,9 @@ export default function PublicPrescriptionVerify() {
   const [searched, setSearched] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
+  const [activeLayoutView, setActiveLayoutView] = useState<'oficial' | 'dispensacao_farmacia'>(
+    'dispensacao_farmacia',
+  )
 
   // Perform search by verification code
   const handleVerify = async (codeToSearch: string) => {
@@ -467,178 +471,212 @@ export default function PublicPrescriptionVerify() {
                   onClick={handlePrint}
                   className="bg-white text-slate-800 text-xs h-9 font-semibold"
                 >
-                  <Printer className="h-4 w-4 mr-1.5 text-slate-600" /> Imprimir Documento
+                  <Printer className="h-4 w-4 mr-1.5 text-slate-600" /> Imprimir 2ª Via / PDF
                 </Button>
               </div>
             </div>
 
-            {/* Official Document View */}
-            <Card className="border-slate-300 shadow-md bg-white overflow-hidden print:border-none print:shadow-none">
-              {/* Document Header */}
-              <div className="p-6 sm:p-8 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                      <FileText className="h-4 w-4" />
+            {/* Alternador de Layout para Farmácias (print:hidden) */}
+            <div className="print:hidden flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+              <span className="text-xs font-bold text-slate-700">Formato de Visualização:</span>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  variant={activeLayoutView === 'dispensacao_farmacia' ? 'default' : 'outline'}
+                  onClick={() => setActiveLayoutView('dispensacao_farmacia')}
+                  className="text-xs h-8"
+                >
+                  <Pill className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                  PDF Otimizado para Farmácias
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeLayoutView === 'oficial' ? 'default' : 'outline'}
+                  onClick={() => setActiveLayoutView('oficial')}
+                  className="text-xs h-8"
+                >
+                  <FileText className="h-3.5 w-3.5 mr-1 text-blue-600" />
+                  Visualização Padrão
+                </Button>
+              </div>
+            </div>
+
+            {/* Layout Otimizado para Dispensação em Farmácia */}
+            {activeLayoutView === 'dispensacao_farmacia' ? (
+              <PharmacyPrescriptionPDFView
+                prescription={prescription}
+                doctor={doctor}
+                patient={patient}
+              />
+            ) : (
+              /* Official Document View */
+              <Card className="border-slate-300 shadow-md bg-white overflow-hidden print:border-none print:shadow-none">
+                {/* Document Header */}
+                <div className="p-6 sm:p-8 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                        Receituário Médico Digital
+                      </span>
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
-                      Receituário Médico Digital
+                    <h3 className="text-xl font-bold text-slate-900">
+                      {doctor?.name || 'Dr(a). Médico Prescritor'}
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      {doctor?.council_type || 'CRM'}:{' '}
+                      <strong>{doctor?.council_number || doctor?.crm || 'Não informado'}</strong>
+                    </p>
+                  </div>
+
+                  <div className="text-left sm:text-right space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      Data de Emissão
+                    </span>
+                    <p className="text-xs font-bold text-slate-800">
+                      {prescription.created
+                        ? new Date(prescription.created).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : 'Data recente'}
+                    </p>
+                    <span className="text-[11px] font-mono font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded inline-block">
+                      Cód: {currentVerificationCode}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">
-                    {doctor?.name || 'Dr(a). Médico Prescritor'}
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    {doctor?.council_type || 'CRM'}:{' '}
-                    <strong>{doctor?.council_number || doctor?.crm || 'Não informado'}</strong>
-                  </p>
                 </div>
 
-                <div className="text-left sm:text-right space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                    Data de Emissão
-                  </span>
-                  <p className="text-xs font-bold text-slate-800">
-                    {prescription.created
-                      ? new Date(prescription.created).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : 'Data recente'}
-                  </p>
-                  <span className="text-[11px] font-mono font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded inline-block">
-                    Cód: {currentVerificationCode}
-                  </span>
-                </div>
-              </div>
-
-              <CardContent className="p-6 sm:p-8 space-y-6">
-                {/* Patient Info Box */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    Dados do Paciente:
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-slate-500">Nome Completo:</span>
-                      <p className="font-bold text-slate-900 text-sm">
-                        {patient?.name || 'Paciente'}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">CPF do Paciente:</span>
-                      <p className="font-bold text-slate-900 font-mono">
-                        {patient?.cpf || 'Não informado'}
-                      </p>
+                <CardContent className="p-6 sm:p-8 space-y-6">
+                  {/* Patient Info Box */}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Dados do Paciente:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-500">Nome Completo:</span>
+                        <p className="font-bold text-slate-900 text-sm">
+                          {patient?.name || 'Paciente'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">CPF do Paciente:</span>
+                        <p className="font-bold text-slate-900 font-mono">
+                          {patient?.cpf || 'Não informado'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Prescribed Medications Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                    <Pill className="h-4 w-4 text-emerald-600" />
-                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-                      Medicamentos Prescritos
-                    </h4>
-                  </div>
-
+                  {/* Prescribed Medications Section */}
                   <div className="space-y-3">
-                    {(prescription.medications || []).map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-xl border border-slate-200 bg-white space-y-1 text-xs"
-                      >
-                        <div className="flex items-start justify-between">
-                          <h5 className="font-bold text-sm text-slate-900">
-                            {idx + 1}. {item.medication}
-                          </h5>
-                          <Badge variant="outline" className="text-[11px] font-semibold">
-                            {item.dosage}
-                          </Badge>
-                        </div>
-                        <p className="text-slate-700">
-                          <strong>Posologia:</strong> {item.dosage}{' '}
-                          {item.frequency && `• ${item.frequency}`}
-                        </p>
-                        {item.period_days && (
-                          <p className="text-slate-600">
-                            <strong>Duração do Tratamento:</strong> {item.period_days} dias
-                          </p>
-                        )}
-                        {item.instructions && (
-                          <p className="text-slate-600 italic bg-slate-50 p-2 rounded mt-1 border border-slate-100">
-                            <strong>Orientações:</strong> {item.instructions}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {prescription.notes && (
-                  <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-xs text-blue-950 space-y-1">
-                    <span className="font-bold block">Observações do Prescritor:</span>
-                    <p className="text-blue-900">{prescription.notes}</p>
-                  </div>
-                )}
-
-                {/* Verification Footer with QR Code */}
-                <div className="pt-6 border-t-2 border-dashed border-slate-200 mt-8">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    {/* QR Code */}
-                    <div className="flex items-center gap-4">
-                      <div className="bg-white p-2 rounded-xl border border-slate-300 shadow-xs shrink-0">
-                        <QRCodeSVG value={verificationUrl} size={96} />
-                      </div>
-                      <div className="space-y-1 text-xs">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                          QR Code de Autenticidade
-                        </span>
-                        <p className="font-bold text-slate-900">Aponte a câmera para consultar</p>
-                        <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
-                          A farmácia pode validar este documento a qualquer momento pela URL ou QR
-                          Code.
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                      <Pill className="h-4 w-4 text-emerald-600" />
+                      <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                        Medicamentos Prescritos
+                      </h4>
                     </div>
 
-                    {/* Verification Code Box */}
-                    <div className="text-left sm:text-right space-y-1.5 w-full sm:w-auto">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                        Código de Verificação Único:
-                      </span>
-                      <div className="flex items-center sm:justify-end gap-2">
-                        <span className="font-mono text-sm sm:text-base font-extrabold bg-blue-100 text-blue-900 px-3 py-1 rounded-lg border border-blue-200 tracking-wider">
-                          {currentVerificationCode}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleCopyCode}
-                          className="h-8 px-2 text-slate-600 print:hidden"
-                          title="Copiar código"
+                    <div className="space-y-3">
+                      {(prescription.medications || []).map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-xl border border-slate-200 bg-white space-y-1 text-xs"
                         >
-                          {copiedCode ? (
-                            <Check className="h-4 w-4 text-emerald-600" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
+                          <div className="flex items-start justify-between">
+                            <h5 className="font-bold text-sm text-slate-900">
+                              {idx + 1}. {item.medication}
+                            </h5>
+                            <Badge variant="outline" className="text-[11px] font-semibold">
+                              {item.dosage}
+                            </Badge>
+                          </div>
+                          <p className="text-slate-700">
+                            <strong>Posologia:</strong> {item.dosage}{' '}
+                            {item.frequency && `• ${item.frequency}`}
+                          </p>
+                          {item.period_days && (
+                            <p className="text-slate-600">
+                              <strong>Duração do Tratamento:</strong> {item.period_days} dias
+                            </p>
                           )}
-                        </Button>
-                      </div>
-                      <p className="text-[10px] text-slate-400 font-mono truncate max-w-xs sm:max-w-sm">
-                        {verificationUrl}
-                      </p>
+                          {item.instructions && (
+                            <p className="text-slate-600 italic bg-slate-50 p-2 rounded mt-1 border border-slate-100">
+                              <strong>Orientações:</strong> {item.instructions}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  {/* Notes */}
+                  {prescription.notes && (
+                    <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-xs text-blue-950 space-y-1">
+                      <span className="font-bold block">Observações do Prescritor:</span>
+                      <p className="text-blue-900">{prescription.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Verification Footer with QR Code */}
+                  <div className="pt-6 border-t-2 border-dashed border-slate-200 mt-8">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                      {/* QR Code */}
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white p-2 rounded-xl border border-slate-300 shadow-xs shrink-0">
+                          <QRCodeSVG value={verificationUrl} size={96} />
+                        </div>
+                        <div className="space-y-1 text-xs">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                            QR Code de Autenticidade
+                          </span>
+                          <p className="font-bold text-slate-900">Aponte a câmera para consultar</p>
+                          <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
+                            A farmácia pode validar este documento a qualquer momento pela URL ou QR
+                            Code.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Verification Code Box */}
+                      <div className="text-left sm:text-right space-y-1.5 w-full sm:w-auto">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                          Código de Verificação Único:
+                        </span>
+                        <div className="flex items-center sm:justify-end gap-2">
+                          <span className="font-mono text-sm sm:text-base font-extrabold bg-blue-100 text-blue-900 px-3 py-1 rounded-lg border border-blue-200 tracking-wider">
+                            {currentVerificationCode}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCopyCode}
+                            className="h-8 px-2 text-slate-600 print:hidden"
+                            title="Copiar código"
+                          >
+                            {copiedCode ? (
+                              <Check className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-mono truncate max-w-xs sm:max-w-sm">
+                          {verificationUrl}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Quick Farmácia Actions Bar (hidden in print) */}
             <div className="print:hidden flex flex-wrap items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
