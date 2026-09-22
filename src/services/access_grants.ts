@@ -173,8 +173,9 @@ export async function logAccessAudit(data: {
       ip_address: '189.40.12.88 (Brasil - Seguro LGPD)',
     })
 
-    // Garantia de disparo de notificação imediata in-app para o paciente caso o hook backend demore
+    // Notificações in-app: paciente e clínicas vinculadas aos médicos
     try {
+      // 1. Notificar paciente
       const patientUsers = await pb.collection('users').getList(1, 1, {
         filter: `patient_link = '${data.patientId}'`,
       })
@@ -189,9 +190,9 @@ export async function logAccessAudit(data: {
                 ? 'Acesso Revogado'
                 : 'Auditoria de Acesso'
 
-        const notifMsg = `O profissional ${data.actorName} (${data.actorRole}) acessou: ${data.resource}${
-          data.details ? ` (${data.details})` : ''
-        }.`
+        const notifMsg = `O profissional ${data.actorName} (${data.actorRole}) ${
+          data.action === 'revogou' ? 'teve o acesso revogado' : 'acessou'
+        }: ${data.resource}${data.details ? ` (${data.details})` : ''}.`
 
         await pb.collection('notifications').create({
           user: pUser.id,
@@ -201,6 +202,30 @@ export async function logAccessAudit(data: {
           read: false,
           link: '/patient/acessos',
         })
+      }
+
+      // 2. Se for concessão ou revogação de acesso, notificar também a clínica
+      if (data.action === 'concedeu_24h' || data.action === 'revogou') {
+        const clinicUsers = await pb.collection('users').getList(1, 10, {
+          filter: `role = 'clinic'`,
+        })
+        for (const clinicUser of clinicUsers.items) {
+          const isRevoked = data.action === 'revogou'
+          await pb.collection('notifications').create({
+            user: clinicUser.id,
+            title: isRevoked
+              ? `Concessão de Acesso Revogada: ${data.actorName}`
+              : `Nova Concessão de Acesso 24h: ${data.actorName}`,
+            message: isRevoked
+              ? `A autorização de acesso de 24h com ${data.actorName} foi revogada.${
+                  data.details ? ` Motivo: ${data.details}` : ''
+                }`
+              : `Nova concessão de 24h criada para ${data.actorName} com acesso a prontuário e exames.`,
+            type: isRevoked ? 'warning' : 'info',
+            read: false,
+            link: '/clinic#concessoes',
+          })
+        }
       }
     } catch {
       // Falha secundária silenciosa

@@ -122,7 +122,7 @@ export function ClinicAccessGrantsPanel({ onOpenLgpdReport }: ClinicAccessGrants
   ).length
 
   return (
-    <Card className="border-slate-200 shadow-subtle overflow-hidden">
+    <Card id="concessoes" className="border-slate-200 shadow-subtle overflow-hidden scroll-mt-20">
       <CardHeader className="bg-slate-50/70 border-b border-slate-100 p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">

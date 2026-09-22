@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button'
 import { ClinicReportsModal } from '@/components/ClinicReportsModal'
 import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
 import { ClinicAccessGrantsPanel } from '@/components/ClinicAccessGrantsPanel'
+import { ClinicSupplyConsumptionPanel } from '@/components/ClinicSupplyConsumptionPanel'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import { ShieldCheck } from 'lucide-react'
@@ -319,6 +320,9 @@ export default function ClinicDashboard() {
           </div>
         </div>
       </div>
+
+      {/* FRENTE 1: Painel Executivo de Consumo de Insumos & Custo por Atendimento */}
+      <ClinicSupplyConsumptionPanel />
 
       {/* Gráficos Analíticos com Recharts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

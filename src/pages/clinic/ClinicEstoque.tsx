@@ -71,8 +71,9 @@ export default function ClinicEstoque() {
   const [movementBatch, setMovementBatch] = useState('')
   const [submittingMovement, setSubmittingMovement] = useState(false)
 
-  // Modal Novo Insumo
+  // Modal Novo Insumo & Edição
   const [newSupplyModalOpen, setNewSupplyModalOpen] = useState(false)
+  const [editingSupply, setEditingSupply] = useState<ClinicSupply | null>(null)
   const [newSupplyName, setNewSupplyName] = useState('')
   const [newSupplyCategory, setNewSupplyCategory] = useState('')
   const [newSupplyQty, setNewSupplyQty] = useState<number>(50)
@@ -189,8 +190,34 @@ export default function ClinicEstoque() {
     }
   }
 
-  // Cadastrar novo insumo
-  const handleCreateSupply = async (e: React.FormEvent) => {
+  // Abrir modal de edição de insumo
+  const handleOpenEditSupplyModal = (supply: ClinicSupply) => {
+    setEditingSupply(supply)
+    setNewSupplyName(supply.name)
+    setNewSupplyCategory(supply.category || '')
+    setNewSupplyQty(supply.quantity)
+    setNewSupplyMinQty(supply.min_quantity)
+    setNewSupplyUnit(supply.unit || 'un')
+    setNewSupplyLocation(supply.location || '')
+    setNewSupplyCost(supply.cost_price || 0)
+    setNewSupplyModalOpen(true)
+  }
+
+  // Abrir modal de novo insumo
+  const handleOpenNewSupplyModal = () => {
+    setEditingSupply(null)
+    setNewSupplyName('')
+    setNewSupplyCategory('')
+    setNewSupplyQty(50)
+    setNewSupplyMinQty(20)
+    setNewSupplyUnit('un')
+    setNewSupplyLocation('')
+    setNewSupplyCost(0)
+    setNewSupplyModalOpen(true)
+  }
+
+  // Cadastrar ou atualizar insumo
+  const handleCreateOrUpdateSupply = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newSupplyName.trim()) {
       toast({ title: 'Nome do insumo obrigatório', variant: 'destructive' })
@@ -198,23 +225,37 @@ export default function ClinicEstoque() {
     }
     setSubmittingNewSupply(true)
     try {
-      await createClinicSupply({
-        name: newSupplyName.trim(),
-        category: newSupplyCategory.trim() || 'Geral',
-        quantity: Number(newSupplyQty),
-        min_quantity: Number(newSupplyMinQty),
-        unit: newSupplyUnit.trim() || 'un',
-        location: newSupplyLocation.trim(),
-        cost_price: Number(newSupplyCost),
-      })
-      toast({ title: 'Insumo cadastrado com sucesso!' })
+      if (editingSupply) {
+        await updateClinicSupply(editingSupply.id, {
+          name: newSupplyName.trim(),
+          category: newSupplyCategory.trim() || 'Geral',
+          quantity: Number(newSupplyQty),
+          min_quantity: Number(newSupplyMinQty),
+          unit: newSupplyUnit.trim() || 'un',
+          location: newSupplyLocation.trim(),
+          cost_price: Number(newSupplyCost),
+        })
+        toast({ title: 'Insumo atualizado com sucesso!' })
+      } else {
+        await createClinicSupply({
+          name: newSupplyName.trim(),
+          category: newSupplyCategory.trim() || 'Geral',
+          quantity: Number(newSupplyQty),
+          min_quantity: Number(newSupplyMinQty),
+          unit: newSupplyUnit.trim() || 'un',
+          location: newSupplyLocation.trim(),
+          cost_price: Number(newSupplyCost),
+        })
+        toast({ title: 'Insumo cadastrado com sucesso!' })
+      }
       setNewSupplyModalOpen(false)
-      setNewSupplyName('')
-      setNewSupplyCategory('')
-      setNewSupplyLocation('')
+      setEditingSupply(null)
       loadData()
     } catch {
-      toast({ title: 'Erro ao cadastrar insumo', variant: 'destructive' })
+      toast({
+        title: editingSupply ? 'Erro ao atualizar insumo' : 'Erro ao cadastrar insumo',
+        variant: 'destructive',
+      })
     } finally {
       setSubmittingNewSupply(false)
     }
@@ -249,7 +290,7 @@ export default function ClinicEstoque() {
 
           <Button
             size="sm"
-            onClick={() => setNewSupplyModalOpen(true)}
+            onClick={handleOpenNewSupplyModal}
             className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 gap-1.5"
           >
             <Plus className="h-4 w-4" /> Novo Insumo
@@ -522,6 +563,15 @@ export default function ClinicEstoque() {
                           <div className="flex items-center justify-end gap-1.5">
                             <Button
                               size="sm"
+                              variant="ghost"
+                              onClick={() => handleOpenEditSupplyModal(supply)}
+                              className="h-7 text-[11px] px-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                              title="Editar insumo e preço de custo"
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => handleOpenMovementModal(supply, 'entrada')}
                               className="h-7 text-[11px] px-2.5 border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100 gap-1 font-semibold"
@@ -536,7 +586,7 @@ export default function ClinicEstoque() {
                               className="h-7 text-[11px] px-2.5 border-rose-200 text-rose-800 bg-rose-50/50 hover:bg-rose-100 gap-1 font-semibold"
                             >
                               <ArrowDownRight className="h-3.5 w-3.5 text-rose-600" />
-                              Dar Baixa
+                              Baixa
                             </Button>
                           </div>
                         </td>
@@ -755,20 +805,30 @@ export default function ClinicEstoque() {
         </Dialog>
       )}
 
-      {/* MODAL NOVO INSUMO */}
-      <Dialog open={newSupplyModalOpen} onOpenChange={setNewSupplyModalOpen}>
+      {/* MODAL NOVO INSUMO OU EDIÇÃO */}
+      <Dialog
+        open={newSupplyModalOpen}
+        onOpenChange={(open) => {
+          setNewSupplyModalOpen(open)
+          if (!open) setEditingSupply(null)
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-slate-900 text-base">
               <Plus className="h-5 w-5 text-emerald-600" />
-              Cadastrar Novo Insumo na Clínica
+              {editingSupply
+                ? 'Editar Insumo & Preço de Custo'
+                : 'Cadastrar Novo Insumo na Clínica'}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Adicione novos materiais de consultório, curativos ou EPIs para controle de estoque.
+              {editingSupply
+                ? 'Atualize dados, estoque de segurança e o valor de custo unitário para o cálculo de procedimentos.'
+                : 'Adicione novos materiais de consultório, curativos ou EPIs para controle de estoque.'}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateSupply} className="space-y-3 py-2 text-xs">
+          <form onSubmit={handleCreateOrUpdateSupply} className="space-y-3 py-2 text-xs">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-700">
                 Nome do Insumo <span className="text-red-500">*</span>
@@ -876,7 +936,11 @@ export default function ClinicEstoque() {
                 disabled={submittingNewSupply || !newSupplyName.trim()}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
               >
-                {submittingNewSupply ? 'Cadastrando...' : 'Salvar Insumo'}
+                {submittingNewSupply
+                  ? 'Salvando...'
+                  : editingSupply
+                    ? 'Atualizar Insumo'
+                    : 'Salvar Insumo'}
               </Button>
             </DialogFooter>
           </form>
