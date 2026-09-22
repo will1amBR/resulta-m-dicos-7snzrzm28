@@ -165,19 +165,20 @@ export default function ClinicAgenda() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       {/* Header com Ações */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-emerald-600" /> Agenda Geral da Clínica
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2 break-words">
+            <CalendarIcon className="h-5 w-5 text-emerald-600 shrink-0" />
+            <span>Agenda Geral da Clínica</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Visão unificada dos agendamentos de todos os médicos e salas de atendimento.
+          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+            Acompanhe em tempo real a grade de horários, médicos escalados e atendimentos de hoje.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -190,13 +191,12 @@ export default function ClinicAgenda() {
 
           <Button
             onClick={() => setCreateModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Nova Consulta
+            <Plus className="h-4 w-4 shrink-0" /> Novo Agendamento
           </Button>
         </div>
       </div>
-
       {/* Barra de Filtros */}
       <div className="flex flex-wrap gap-2.5 items-center bg-white p-3 rounded-lg border border-slate-200">
         <Select value={doctorFilter} onValueChange={setDoctorFilter}>

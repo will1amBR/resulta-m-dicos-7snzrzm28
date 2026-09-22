@@ -262,17 +262,17 @@ export default function PatientPrescriptions() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 min-w-0">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-xl text-slate-900 flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-lg sm:text-xl text-slate-900 flex items-center gap-2.5 break-words">
+            <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
               <Pill className="h-5 w-5" />
             </div>
-            Minhas Prescrições & Medicamentos
+            <span>Minhas Prescrições & Medicamentos</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             Acompanhe o status das suas receitas digitais, dosagens, validades e solicite renovações
             com 1 clique.
           </p>

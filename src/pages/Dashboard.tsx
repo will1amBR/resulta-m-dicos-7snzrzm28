@@ -291,14 +291,16 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between bg-white p-3 rounded-lg border shadow-subtle">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-lg border shadow-subtle gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="h-9 w-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
             <FileText className="h-5 w-5" />
           </div>
-          <div>
-            <h1 className="font-bold text-slate-900 text-base">Espaço de Consulta Unificado</h1>
-            <p className="text-xs text-slate-500">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-bold text-slate-900 text-base break-words">
+              Espaço de Consulta Unificado
+            </h1>
+            <p className="text-xs text-slate-500 truncate">
               {activePatient
                 ? `Atendendo: ${activePatient.name} (${activePatient.insurance || 'Particular'})`
                 : 'Selecione um paciente para iniciar atendimento'}
@@ -307,15 +309,20 @@ export default function Dashboard() {
         </div>
 
         {activePatient && (
-          <div className="flex items-center gap-2">
-            <Button onClick={() => window.print()} size="sm" variant="outline" className="no-print">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              onClick={() => window.print()}
+              size="sm"
+              variant="outline"
+              className="no-print text-xs shrink-0"
+            >
               <Printer className="h-4 w-4 mr-1.5" />
-              Exportar Prontuário (PDF)
+              Exportar (PDF)
             </Button>
             <Button
               onClick={handleFinishConsultation}
               size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white no-print"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white no-print text-xs shrink-0"
             >
               <CheckCircle className="h-4 w-4 mr-1.5" />
               Finalizar Consulta

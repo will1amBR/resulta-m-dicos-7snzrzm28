@@ -297,16 +297,18 @@ export default function AdminCouncils() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12 min-w-0 max-w-full">
       {/* Header Banner */}
-      <div className="bg-white p-5 rounded-xl border shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+          <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
             <ShieldCheck className="h-5 w-5" />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-slate-900">Central de Aprovações & Secretaria</h1>
-            <p className="text-xs text-slate-500">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 break-words">
+              Central de Aprovações & Secretaria
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
               Gerencie novos agendamentos válidos, renovações de receitas e aprovações de registros
               profissionais.
             </p>
@@ -321,7 +323,7 @@ export default function AdminCouncils() {
             loadRenewals()
             loadUsers()
           }}
-          className="text-xs h-8 self-start sm:self-auto"
+          className="text-xs h-8 self-start sm:self-auto shrink-0"
         >
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Atualizar
         </Button>
@@ -331,43 +333,45 @@ export default function AdminCouncils() {
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'consultas' | 'receitas' | 'conselhos')}
-        className="space-y-4"
+        className="space-y-4 min-w-0"
       >
-        <TabsList className="bg-slate-100 p-1 rounded-xl">
-          <TabsTrigger
-            value="consultas"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <CalendarPlus className="h-4 w-4 text-blue-600" />
-            <span>Cadastrar Consulta Válida</span>
-          </TabsTrigger>
+        <div className="w-full overflow-x-auto pb-1">
+          <TabsList className="bg-slate-100 p-1 rounded-xl flex w-max min-w-full sm:w-auto">
+            <TabsTrigger
+              value="consultas"
+              className="text-xs px-3 sm:px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0"
+            >
+              <CalendarPlus className="h-4 w-4 text-blue-600 shrink-0" />
+              <span>Cadastrar Consulta Válida</span>
+            </TabsTrigger>
 
-          <TabsTrigger
-            value="receitas"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <Pill className="h-4 w-4 text-amber-600" />
-            <span>Renovação de Receitas</span>
-            {pendingRenewals.length > 0 && (
-              <Badge className="text-[10px] px-1.5 py-0 h-4 bg-amber-500 text-white hover:bg-amber-500">
-                {pendingRenewals.length}
-              </Badge>
-            )}
-          </TabsTrigger>
+            <TabsTrigger
+              value="receitas"
+              className="text-xs px-3 sm:px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0"
+            >
+              <Pill className="h-4 w-4 text-amber-600 shrink-0" />
+              <span>Renovação de Receitas</span>
+              {pendingRenewals.length > 0 && (
+                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-amber-500 text-white hover:bg-amber-500">
+                  {pendingRenewals.length}
+                </Badge>
+              )}
+            </TabsTrigger>
 
-          <TabsTrigger
-            value="conselhos"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <UserCheck className="h-4 w-4 text-emerald-600" />
-            <span>Conselhos Profissionais</span>
-            {pendingUsers.length > 0 && (
-              <Badge className="text-[10px] px-1.5 py-0 h-4 bg-blue-600 text-white hover:bg-blue-600">
-                {pendingUsers.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger
+              value="conselhos"
+              className="text-xs px-3 sm:px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-1.5 sm:gap-2 font-semibold shrink-0"
+            >
+              <UserCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>Conselhos Profissionais</span>
+              {pendingUsers.length > 0 && (
+                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-blue-600 text-white hover:bg-blue-600">
+                  {pendingUsers.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ================================================================= */}
         {/* ABA 1: CADASTRAR CONSULTA VÁLIDA PELA SECRETARIA */}

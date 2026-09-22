@@ -264,19 +264,19 @@ export default function ClinicEstoque() {
   return (
     <div className="space-y-6 pb-12">
       {/* Header com Ações */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Boxes className="h-6 w-6 text-emerald-600" />
-            Controle de Insumos & Estoque Clínico
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+            <Boxes className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
+            <span>Controle de Insumos & Estoque Clínico</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
             Gerenciamento de materiais, luvas, descartáveis, controle de consumo em procedimentos e
             reposição de lotes com alertas visuais.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -291,9 +291,9 @@ export default function ClinicEstoque() {
           <Button
             size="sm"
             onClick={handleOpenNewSupplyModal}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 gap-1.5"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 gap-1.5 whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Novo Insumo
+            <Plus className="h-4 w-4 shrink-0" /> Novo Insumo
           </Button>
         </div>
       </div>
@@ -403,71 +403,73 @@ export default function ClinicEstoque() {
 
       {/* Tabs: Insumos vs Histórico de Movimentações */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-subtle">
-        <div className="border-b border-slate-200 px-4 pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
-          <div className="flex items-center gap-2">
+        <div className="border-b border-slate-200 px-4 pt-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/50">
+          <div className="flex items-center gap-2 overflow-x-auto min-w-0">
             <button
               onClick={() => setActiveTab('insumos')}
-              className={`px-3 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${
                 activeTab === 'insumos'
                   ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-md'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <PackageCheck className="h-4 w-4" />
-              Insumos Cadastrados ({supplies.length})
+              <PackageCheck className="h-4 w-4 shrink-0" />
+              <span>Insumos ({supplies.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('movimentacoes')}
-              className={`px-3 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${
                 activeTab === 'movimentacoes'
                   ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-md'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <History className="h-4 w-4" />
-              Histórico de Entradas & Saídas ({movements.length})
+              <History className="h-4 w-4 shrink-0" />
+              <span>Histórico ({movements.length})</span>
             </button>
           </div>
 
           {activeTab === 'insumos' && (
-            <div className="flex flex-wrap items-center gap-2 pb-2 sm:pb-0">
-              <div className="relative w-48 sm:w-60">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pb-2 sm:pb-0 min-w-0">
+              <div className="relative w-full sm:w-60 min-w-0">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                 <Input
                   placeholder="Buscar insumo ou local..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-white"
+                  className="pl-8 h-8 text-xs bg-white w-full"
                 />
               </div>
 
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="h-8 text-xs w-36 bg-white">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todas Categorias</SelectItem>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-8 text-xs flex-1 sm:w-36 bg-white">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todas Categorias</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => setStatusFilter(v as 'todos' | 'baixo' | 'normal')}
-              >
-                <SelectTrigger className="h-8 text-xs w-32 bg-white">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Níveis</SelectItem>
-                  <SelectItem value="baixo">⚠️ Baixo Estoque</SelectItem>
-                  <SelectItem value="normal">✓ Normal</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => setStatusFilter(v as 'todos' | 'baixo' | 'normal')}
+                >
+                  <SelectTrigger className="h-8 text-xs flex-1 sm:w-32 bg-white">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os Níveis</SelectItem>
+                    <SelectItem value="baixo">⚠️ Baixo Estoque</SelectItem>
+                    <SelectItem value="normal">✓ Normal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
         </div>

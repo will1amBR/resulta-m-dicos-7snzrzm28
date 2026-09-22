@@ -118,19 +118,20 @@ export default function ClinicPatients() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       {/* Header */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-            <Users className="h-5 w-5 text-emerald-600" /> Pacientes da Clínica
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2 break-words">
+            <Users className="h-5 w-5 text-emerald-600 shrink-0" />
+            <span>Pacientes da Clínica</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
             Base unificada de pacientes atendidos pelos médicos vinculados à unidade.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -143,27 +144,27 @@ export default function ClinicPatients() {
 
           <Button
             onClick={() => setNewPatientOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Novo Paciente
+            <Plus className="h-4 w-4 shrink-0" /> Novo Paciente
           </Button>
         </div>
       </div>
 
       {/* Barra de Busca e Filtro por Médico */}
-      <div className="flex flex-wrap gap-2.5 items-center bg-white p-3 rounded-lg border border-slate-200">
-        <div className="relative flex-1 min-w-[220px]">
+      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center bg-white p-3 rounded-lg border border-slate-200 min-w-0">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Buscar paciente por nome ou CPF..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-xs bg-slate-50 border-slate-200"
+            className="pl-9 h-8 text-xs bg-slate-50 border-slate-200 w-full"
           />
         </div>
 
         <Select value={doctorFilter} onValueChange={setDoctorFilter}>
-          <SelectTrigger className="h-8 text-xs w-52 bg-slate-50 border-slate-200">
+          <SelectTrigger className="h-8 text-xs w-full sm:w-52 bg-slate-50 border-slate-200 shrink-0">
             <SelectValue placeholder="Filtrar por médico" />
           </SelectTrigger>
           <SelectContent>

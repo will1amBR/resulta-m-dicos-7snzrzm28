@@ -327,37 +327,37 @@ export default function PatientDocuments() {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner with Upload CTA */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-xl text-slate-900 flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-lg sm:text-xl text-slate-900 flex items-center gap-2.5 break-words">
+            <div className="h-9 w-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
               <FolderOpen className="h-5 w-5" />
             </div>
-            Meus Documentos de Saúde
+            <span>Meus Documentos de Saúde</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             Armazene seus exames, laudos e atestados externos ou visualize documentos compartilhados
             pela clínica.
           </p>
         </div>
 
         {/* Botão Enviar Documento & Tutorial */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button
             variant="outline"
             onClick={() => setIsTutorialOpen(true)}
-            className="text-xs font-semibold h-10 border-blue-200 text-blue-700 bg-blue-50/60 hover:bg-blue-100 flex items-center gap-1.5"
+            className="text-xs font-semibold h-9 sm:h-10 border-blue-200 text-blue-700 bg-blue-50/60 hover:bg-blue-100 flex items-center gap-1.5 shrink-0"
           >
-            <HelpCircle className="h-4 w-4 text-blue-600" />
-            Como baixar nos laboratórios
+            <HelpCircle className="h-4 w-4 text-blue-600 shrink-0" />
+            <span>Como baixar nos laboratórios</span>
           </Button>
 
           <Button
             onClick={() => setIsUploadOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm flex items-center gap-2 h-10 px-4"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm flex items-center gap-2 h-9 sm:h-10 px-4 shrink-0 whitespace-nowrap"
           >
-            <Upload className="h-4 w-4" />
-            Enviar documento
+            <Upload className="h-4 w-4 shrink-0" />
+            <span>Enviar documento</span>
           </Button>
         </div>
       </div>

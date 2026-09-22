@@ -256,19 +256,19 @@ export default function DoctorClinicalDocuments() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-16">
+    <div className="max-w-6xl mx-auto space-y-6 pb-16 min-w-0">
       {/* Top Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+        <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+            <div className="h-10 w-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold shrink-0">
               <FileCheck2 className="h-5 w-5" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight break-words">
                 Emissão de Documentos Clínicos
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Atestados, laudos, encaminhamentos e declarações com código de validação pública e
                 QR Code.
               </p>
@@ -276,7 +276,7 @@ export default function DoctorClinicalDocuments() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {isCertValidated ? (
             <Badge className="bg-emerald-50 text-emerald-700 border-emerald-300 text-xs gap-1 py-1 px-3">
               <ShieldCheck className="h-3.5 w-3.5" /> Assinatura Digital Ativa
@@ -598,19 +598,19 @@ export default function DoctorClinicalDocuments() {
         {/* ABA 2: HISTÓRICO DE DOCUMENTOS */}
         <TabsContent value="historico" className="space-y-4">
           {/* Barra de Filtro */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row gap-3 items-center justify-between">
-            <div className="relative w-full sm:w-80">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row gap-3 items-center justify-between min-w-0">
+            <div className="relative w-full sm:w-80 min-w-0">
               <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
               <Input
                 placeholder="Buscar por paciente, código ou título..."
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadHistory()}
-                className="pl-9 h-9 text-xs"
+                className="pl-9 h-9 text-xs w-full"
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 min-w-0">
               {[
                 { type: 'todos', label: 'Todos' },
                 { type: 'atestado', label: 'Atestados' },

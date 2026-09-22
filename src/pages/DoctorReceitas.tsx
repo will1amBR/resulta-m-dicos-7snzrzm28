@@ -353,19 +353,19 @@ export default function DoctorReceitas() {
     }
   }
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-16">
+    <div className="max-w-6xl mx-auto space-y-6 pb-16 min-w-0">
       {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+        <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold shrink-0">
               <FileText className="h-5 w-5" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight break-words">
                 Receitas Médicas Digitais
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 leading-relaxed">
                 Prescrição ágil com validação cruzada de IA e envio multicanal (E-mail, WhatsApp e
                 SMS).
               </p>
@@ -374,7 +374,7 @@ export default function DoctorReceitas() {
         </div>
 
         {/* Certificate Status Widget on Header */}
-        <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+        <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
           <div className="text-right hidden sm:block">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">
               Certificado Digital
@@ -388,7 +388,7 @@ export default function DoctorReceitas() {
             variant="outline"
             size="sm"
             onClick={() => navigate('/configuracoes')}
-            className="text-xs text-blue-700 hover:text-blue-800 h-7"
+            className="text-xs text-blue-700 hover:text-blue-800 h-7 shrink-0"
           >
             {isCertValidated ? 'Gerenciar' : 'Enviar Certificado'}
           </Button>

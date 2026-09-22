@@ -259,42 +259,42 @@ export default function ClinicCrm() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 min-w-0 max-w-full">
       {/* Header Banner */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Kanban className="h-6 w-6 text-indigo-600" />
-              CRM da Clínica — Gestão de Pacientes & Leads
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col lg:flex-row lg:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+              <Kanban className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 shrink-0" />
+              <span>CRM da Clínica — Gestão de Pacientes & Leads</span>
             </h1>
-            <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-[10px]">
+            <Badge className="bg-indigo-100 text-indigo-800 border-indigo-300 text-[10px] shrink-0">
               Funil Kanban
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             Acompanhe o ciclo de vida dos pacientes atuais e contatos fora do sistema, com conversão
             facilitada e envio de WhatsApp.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative w-48 sm:w-60">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <Input
               placeholder="Buscar por nome ou telefone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 h-9 text-xs"
+              className="pl-8 h-9 text-xs w-full"
             />
           </div>
 
           <Button
             size="sm"
             onClick={() => setNewLeadModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 gap-1.5"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 gap-1.5 shrink-0 whitespace-nowrap"
           >
-            <UserPlus className="h-4 w-4" /> Cadastrar Lead
+            <UserPlus className="h-4 w-4 shrink-0" /> Cadastrar Lead
           </Button>
         </div>
       </div>
@@ -339,144 +339,146 @@ export default function ClinicCrm() {
       </div>
 
       {/* Board Kanban das 5 Colunas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3.5 overflow-x-auto min-h-[500px]">
-        {CRM_COLUMNS.map((column) => {
-          const columnLeads = filteredLeads.filter((l) => l.stage === column.id)
+      <div className="w-full overflow-x-auto pb-4">
+        <div className="flex md:grid md:grid-cols-3 lg:grid-cols-5 gap-3.5 min-w-[300px] md:min-w-0">
+          {CRM_COLUMNS.map((column) => {
+            const columnLeads = filteredLeads.filter((l) => l.stage === column.id)
 
-          return (
-            <div
-              key={column.id}
-              className={`rounded-xl border p-3 flex flex-col gap-3 min-w-[240px] ${column.color}`}
-            >
-              {/* Header da Coluna */}
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className={`text-xs font-bold ${column.textColor}`}>{column.title}</span>
-                <span
-                  className={`text-[11px] font-black px-2 py-0.5 rounded-full ${column.badgeBg}`}
-                >
-                  {columnLeads.length}
-                </span>
-              </div>
+            return (
+              <div
+                key={column.id}
+                className={`rounded-xl border p-3 flex flex-col gap-3 w-[260px] md:w-auto shrink-0 md:shrink ${column.color}`}
+              >
+                {/* Header da Coluna */}
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className={`text-xs font-bold ${column.textColor}`}>{column.title}</span>
+                  <span
+                    className={`text-[11px] font-black px-2 py-0.5 rounded-full ${column.badgeBg}`}
+                  >
+                    {columnLeads.length}
+                  </span>
+                </div>
 
-              {/* Lista de Cards da Coluna */}
-              <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[600px] pr-1">
-                {columnLeads.length === 0 ? (
-                  <div className="p-4 text-center text-[11px] text-slate-400 border border-dashed rounded-lg bg-white/40">
-                    Vazio
-                  </div>
-                ) : (
-                  columnLeads.map((lead) => (
-                    <div
-                      key={lead.id}
-                      className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2 hover:shadow-subtle transition-all"
-                    >
-                      <div className="flex items-start justify-between gap-1">
-                        <div>
-                          <p className="font-bold text-xs text-slate-900">{lead.name}</p>
-                          {lead.interest_specialty && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] mt-0.5 px-1.5 py-0 bg-slate-100"
-                            >
-                              {lead.interest_specialty}
+                {/* Lista de Cards da Coluna */}
+                <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[600px] pr-1">
+                  {columnLeads.length === 0 ? (
+                    <div className="p-4 text-center text-[11px] text-slate-400 border border-dashed rounded-lg bg-white/40">
+                      Vazio
+                    </div>
+                  ) : (
+                    columnLeads.map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs space-y-2 hover:shadow-subtle transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-1">
+                          <div>
+                            <p className="font-bold text-xs text-slate-900">{lead.name}</p>
+                            {lead.interest_specialty && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] mt-0.5 px-1.5 py-0 bg-slate-100"
+                              >
+                                {lead.interest_specialty}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {lead.patient ? (
+                            <Badge className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5">
+                              Sistema ✓
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-amber-800 text-[9px] px-1.5">
+                              Lead Novo
                             </Badge>
                           )}
                         </div>
 
-                        {lead.patient ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5">
-                            Sistema ✓
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-amber-800 text-[9px] px-1.5">
-                            Lead Novo
-                          </Badge>
-                        )}
-                      </div>
+                        {/* Contatos */}
+                        <div className="text-[11px] text-slate-600 space-y-0.5">
+                          {lead.phone && (
+                            <p className="flex items-center gap-1">
+                              <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                              {lead.phone}
+                            </p>
+                          )}
+                          {lead.source && (
+                            <p className="text-[10px] text-slate-400">Origem: {lead.source}</p>
+                          )}
+                        </div>
 
-                      {/* Contatos */}
-                      <div className="text-[11px] text-slate-600 space-y-0.5">
-                        {lead.phone && (
-                          <p className="flex items-center gap-1">
-                            <Phone className="h-3 w-3 text-slate-400 shrink-0" />
-                            {lead.phone}
+                        {lead.notes && (
+                          <p className="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border line-clamp-2">
+                            {lead.notes}
                           </p>
                         )}
-                        {lead.source && (
-                          <p className="text-[10px] text-slate-400">Origem: {lead.source}</p>
-                        )}
-                      </div>
 
-                      {lead.notes && (
-                        <p className="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border line-clamp-2">
-                          {lead.notes}
-                        </p>
-                      )}
+                        {/* Ações Rápidas no Card */}
+                        <div className="pt-2 border-t flex flex-col gap-1.5">
+                          <div className="flex items-center gap-1">
+                            {lead.phone && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSendWhatsApp(lead)}
+                                className="h-6 px-2 text-[10px] text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex-1 font-semibold"
+                              >
+                                <MessageSquare className="h-3 w-3 mr-1 text-emerald-600" />
+                                WhatsApp
+                              </Button>
+                            )}
 
-                      {/* Ações Rápidas no Card */}
-                      <div className="pt-2 border-t flex flex-col gap-1.5">
-                        <div className="flex items-center gap-1">
-                          {lead.phone && (
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleSendWhatsApp(lead)}
-                              className="h-6 px-2 text-[10px] text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 flex-1 font-semibold"
+                              onClick={() => navigate('/admin/conselhos')}
+                              className="h-6 px-2 text-[10px] text-blue-800 bg-blue-50 hover:bg-blue-100 border-blue-200 flex-1 font-semibold"
                             >
-                              <MessageSquare className="h-3 w-3 mr-1 text-emerald-600" />
-                              WhatsApp
+                              <CalendarPlus className="h-3 w-3 mr-1 text-blue-600" />
+                              Agendar
+                            </Button>
+                          </div>
+
+                          {/* Botão de Converter em Paciente se ainda não for */}
+                          {!lead.patient && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleOpenConvertModal(lead)}
+                              className="w-full h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+                            >
+                              <UserCheck className="h-3 w-3 mr-1" /> Converter em Paciente
                             </Button>
                           )}
 
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate('/admin/conselhos')}
-                            className="h-6 px-2 text-[10px] text-blue-800 bg-blue-50 hover:bg-blue-100 border-blue-200 flex-1 font-semibold"
-                          >
-                            <CalendarPlus className="h-3 w-3 mr-1 text-blue-600" />
-                            Agendar
-                          </Button>
-                        </div>
-
-                        {/* Botão de Converter em Paciente se ainda não for */}
-                        {!lead.patient && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleOpenConvertModal(lead)}
-                            className="w-full h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
-                          >
-                            <UserCheck className="h-3 w-3 mr-1" /> Converter em Paciente
-                          </Button>
-                        )}
-
-                        {/* Controles para Mover de Coluna */}
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                          <span>Mover para:</span>
-                          <Select
-                            value={lead.stage}
-                            onValueChange={(val) => handleMoveStage(lead.id, val as CrmStage)}
-                          >
-                            <SelectTrigger className="h-6 text-[10px] w-28 bg-slate-50">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CRM_COLUMNS.map((col) => (
-                                <SelectItem key={col.id} value={col.id} className="text-xs">
-                                  {col.title.slice(0, 20)}...
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {/* Controles para Mover de Coluna */}
+                          <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                            <span>Mover para:</span>
+                            <Select
+                              value={lead.stage}
+                              onValueChange={(val) => handleMoveStage(lead.id, val as CrmStage)}
+                            >
+                              <SelectTrigger className="h-6 text-[10px] w-28 bg-slate-50">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CRM_COLUMNS.map((col) => (
+                                  <SelectItem key={col.id} value={col.id} className="text-xs">
+                                    {col.title.slice(0, 20)}...
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
 
       {/* MODAL NOVO LEAD */}

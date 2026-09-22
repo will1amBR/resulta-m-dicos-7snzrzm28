@@ -30,12 +30,12 @@ export default function Pacientes() {
   }, [search])
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border shadow-subtle">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-600" />
-            Base de Pacientes
+    <div className="space-y-4 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border shadow-subtle min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2 break-words">
+            <Users className="h-5 w-5 text-blue-600 shrink-0" />
+            <span>Base de Pacientes</span>
           </h1>
           <p className="text-xs text-slate-500">
             Cadastre e gerencie prontuários e históricos de pacientes.
@@ -45,13 +45,13 @@ export default function Pacientes() {
         <Button
           onClick={() => setModalOpen(true)}
           size="sm"
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap shrink-0"
         >
-          <Plus className="h-4 w-4 mr-1" /> Novo Paciente
+          <Plus className="h-4 w-4 mr-1 shrink-0" /> Novo Paciente
         </Button>
       </div>
 
-      <div className="relative max-w-md">
+      <div className="relative max-w-md min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
           placeholder="Buscar por nome ou CPF..."

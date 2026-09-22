@@ -51,30 +51,30 @@ export default function Agenda() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border shadow-subtle">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-blue-600" />
-            Agenda de Consultas
+    <div className="space-y-4 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border shadow-subtle min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2 break-words">
+            <CalendarIcon className="h-5 w-5 text-blue-600 shrink-0" />
+            <span>Agenda de Consultas</span>
           </h1>
           <p className="text-xs text-slate-500">
             Gerencie horários, status e inicie atendimentos em tempo real.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={() => setModalOpen(true)}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
           >
-            <Plus className="h-4 w-4 mr-1" /> Novo Agendamento
+            <Plus className="h-4 w-4 mr-1 shrink-0" /> Novo Agendamento
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs">
+      <div className="flex gap-2 text-xs overflow-x-auto pb-1 min-w-0">
         {['todos', 'agendada', 'confirmada', 'em_andamento', 'finalizada', 'cancelada'].map(
           (st) => (
             <Button

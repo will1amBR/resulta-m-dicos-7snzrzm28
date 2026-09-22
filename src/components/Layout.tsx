@@ -55,7 +55,7 @@ export default function Layout() {
           <div className="no-print">
             <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} role={userRole} />
           </div>
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col min-w-0">
             <Outlet />
           </main>
           <footer className="no-print h-8 border-t bg-white px-4 flex items-center justify-between text-[11px] text-slate-500 shrink-0">

@@ -145,46 +145,46 @@ export default function ClinicDashboard() {
   return (
     <div className="space-y-6">
       {/* Header com Ações e Exportação */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Activity className="h-6 w-6 text-emerald-600" />
-            Dashboard Executivo da Clínica
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col lg:flex-row lg:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+            <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
+            <span>Dashboard Executivo da Clínica</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             Métricas analíticas consolidadas, receita do mês, indicadores de atendimento e agenda de
             médicos vinculados.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsLgpdModalOpen(true)}
-            className="h-9 text-xs font-semibold gap-1.5 border-indigo-300 text-indigo-900 bg-indigo-50/60 hover:bg-indigo-100/80"
+            className="h-9 text-xs font-semibold gap-1.5 border-indigo-300 text-indigo-900 bg-indigo-50/60 hover:bg-indigo-100/80 shrink-0"
           >
-            <ShieldCheck className="h-4 w-4 text-indigo-600" />
-            Auditoria LGPD (CSV/PDF)
+            <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
+            <span>Auditoria LGPD</span>
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsReportsModalOpen(true)}
-            className="h-9 text-xs font-semibold gap-1.5 border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70"
+            className="h-9 text-xs font-semibold gap-1.5 border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70 shrink-0"
           >
-            <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
-            Relatórios Clínicos
+            <FileSpreadsheet className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>Relatórios Clínicos</span>
           </Button>
 
-          <Link to="/clinic/agenda">
+          <Link to="/clinic/agenda" className="shrink-0">
             <Button
               size="sm"
               className="h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
             >
-              <Calendar className="h-4 w-4" />
-              Ver Agenda Global
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span>Ver Agenda Global</span>
             </Button>
           </Link>
         </div>

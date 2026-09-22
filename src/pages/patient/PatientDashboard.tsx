@@ -170,30 +170,30 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 min-w-0">
       {/* 1. Header / Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 p-6 sm:p-8 text-white shadow-lg">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5 text-yellow-300" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 p-5 sm:p-8 text-white shadow-lg min-w-0">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-w-0">
+          <div className="space-y-1.5 min-w-0 flex-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-yellow-300 shrink-0" />
               <span>Portal do Paciente Resulta</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight break-words">
               {getGreeting()}, {patientName}!
             </h1>
-            <p className="text-blue-100 text-sm max-w-xl">
+            <p className="text-blue-100 text-xs sm:text-sm max-w-xl leading-relaxed">
               Acompanhe seu histórico de saúde, consulte receitas médicas ativas e gerencie seus
               agendamentos em um só lugar.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               onClick={() => navigate('/patient/agendar')}
-              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold shadow-sm text-sm"
+              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold shadow-sm text-xs sm:text-sm whitespace-nowrap"
               size="lg"
             >
-              <CalendarPlus className="h-4 w-4 mr-2 text-blue-600" />
+              <CalendarPlus className="h-4 w-4 mr-2 text-blue-600 shrink-0" />
               Agendar consulta
             </Button>
           </div>

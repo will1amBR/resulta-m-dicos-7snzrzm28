@@ -223,24 +223,24 @@ export default function ClinicWhatsApp() {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-emerald-600" />
-              Portal WhatsApp da Clínica
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2 break-words">
+              <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
+              <span>Portal WhatsApp da Clínica</span>
             </h1>
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-100 text-[10px]">
+            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-100 text-[10px] shrink-0">
               Links Rápidos wa.me
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
             Agendamento facilitado, confirmações, lembretes de véspera e envio de documentos com
             disparo rápido.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -279,40 +279,40 @@ export default function ClinicWhatsApp() {
 
       {/* Tabs Principais */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-subtle">
-        <div className="border-b border-slate-200 px-4 pt-3 flex items-center justify-between bg-slate-50/50">
-          <div className="flex items-center gap-2">
+        <div className="border-b border-slate-200 px-4 pt-3 overflow-x-auto bg-slate-50/50">
+          <div className="flex items-center gap-2 min-w-max">
             <button
               onClick={() => setActiveTab('envio')}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${
                 activeTab === 'envio'
                   ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-md'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Send className="h-4 w-4" />
-              Disparo Rápido de Mensagens
+              <Send className="h-4 w-4 shrink-0" />
+              <span>Disparo Rápido</span>
             </button>
             <button
               onClick={() => setActiveTab('fila')}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${
                 activeTab === 'fila'
                   ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-md'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Clock className="h-4 w-4" />
-              Fila & Histórico de Disparos ({queue.length})
+              <Clock className="h-4 w-4 shrink-0" />
+              <span>Fila & Histórico ({queue.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('templates')}
-              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${
                 activeTab === 'templates'
                   ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-md'
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Sparkles className="h-4 w-4" />
-              Modelos de Mensagem ({templates.length})
+              <Sparkles className="h-4 w-4 shrink-0" />
+              <span>Modelos de Mensagem ({templates.length})</span>
             </button>
           </div>
         </div>

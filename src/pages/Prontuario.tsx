@@ -237,29 +237,31 @@ export default function Prontuario() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border shadow-subtle no-print gap-3">
-        <div>
-          <h1 className="font-bold text-lg text-slate-900">Prontuário Completo</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg border shadow-subtle no-print gap-3 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="font-bold text-base sm:text-lg text-slate-900 break-words">
+            Prontuário Completo
+          </h1>
           <p className="text-xs text-slate-500">
             Paciente: <strong>{activePatient.name}</strong> (CPF: {activePatient.cpf})
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setAccessModalOpen(true)}
-            className="text-xs border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 no-print"
+            className="text-xs border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 no-print shrink-0"
           >
-            <KeyRound className="h-3.5 w-3.5 mr-1" /> Concessão 24h (Modelo Aberto)
+            <KeyRound className="h-3.5 w-3.5 mr-1 shrink-0" /> Concessão 24h
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => window.print()}
-            className="text-xs no-print"
+            className="text-xs no-print shrink-0"
           >
-            <Printer className="h-4 w-4 mr-1" /> 📄 Exportar (PDF)
+            <Printer className="h-4 w-4 mr-1 shrink-0" /> Exportar (PDF)
           </Button>
         </div>
       </div>
@@ -273,7 +275,7 @@ export default function Prontuario() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 min-w-0">
           {specialtyTemplates.map((tmpl) => (
             <Button
               key={tmpl.id}
@@ -281,7 +283,7 @@ export default function Prontuario() {
               variant={selectedTemplateId === tmpl.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleApplyTemplate(tmpl.id)}
-              className={`text-xs h-8 whitespace-nowrap ${
+              className={`text-xs h-8 whitespace-nowrap shrink-0 ${
                 selectedTemplateId === tmpl.id ? 'bg-indigo-600 text-white' : ''
               }`}
             >
