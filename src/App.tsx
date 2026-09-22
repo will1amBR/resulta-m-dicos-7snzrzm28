@@ -51,21 +51,22 @@ const App = () => (
 
           <Route element={<Layout />}>
             <Route
-              path="/receitas"
+              path="/dashboard"
               element={
-                <RoleGuard allow={['doctor', 'clinic']}>
-                  <DoctorReceitas />
+                <RoleGuard allow={['doctor', 'admin']}>
+                  <Dashboard />
                 </RoleGuard>
               }
             />
+            <Route path="/doctor" element={<Navigate to="/dashboard" replace />} />
             <Route
               path="/doctor/documentos"
               element={
-                <RoleGuard allow={['doctor', 'clinic']}>
+                <RoleGuard allow={['doctor', 'clinic', 'admin']}>
                   <DoctorClinicalDocuments />
                 </RoleGuard>
               }
-            />{' '}
+            />
             <Route
               path="/agenda"
               element={
@@ -109,7 +110,7 @@ const App = () => (
             <Route
               path="/doctor/receitas"
               element={
-                <RoleGuard allow={['doctor', 'admin']}>
+                <RoleGuard allow={['doctor', 'clinic', 'admin']}>
                   <DoctorReceitas />
                 </RoleGuard>
               }
