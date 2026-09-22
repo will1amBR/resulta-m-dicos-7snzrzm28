@@ -20,6 +20,7 @@ import { getSpecialtyTemplates } from '@/services/specialty_templates'
 import { SpecialtyTemplate } from '@/types/clinical'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { logAccessAudit } from '@/services/access_grants'
 import { ShieldCheck, Sparkles, LayoutTemplate, Calculator, KeyRound } from 'lucide-react'
 
 export default function Prontuario() {
@@ -45,10 +46,24 @@ export default function Prontuario() {
   const loadRecords = useCallback(() => {
     if (activePatient) {
       getMedicalRecordsForPatient(activePatient.id)
-        .then(setRecords)
+        .then((data) => {
+          setRecords(data)
+          // Registra auditoria de consulta e notifica paciente em tempo real
+          if (user) {
+            logAccessAudit({
+              patientId: activePatient.id,
+              actorUser: user.id,
+              actorName: user.name || 'Médico',
+              actorRole: (user.role as any) || 'doctor',
+              action: 'consultou',
+              resource: 'Prontuário Eletrônico & Evoluções SOAP',
+              details: 'Consulta do histórico clínico e prescrições anteriores',
+            }).catch(() => {})
+          }
+        })
         .catch(() => {})
     }
-  }, [activePatient])
+  }, [activePatient, user])
 
   useEffect(() => {
     getSpecialtyTemplates()

@@ -190,7 +190,7 @@ onRecordAfterCreateSuccess((e) => {
           )
           notif.set('type', 'info')
           notif.set('read', false)
-          notif.set('link', '/patient/documents')
+          notif.set('link', '/patient/documentos')
           $app.save(notif)
         }
       } catch (_) {}

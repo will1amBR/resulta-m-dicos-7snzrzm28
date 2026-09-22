@@ -33,8 +33,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ClinicReportsModal } from '@/components/ClinicReportsModal'
+import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
+import { ShieldCheck } from 'lucide-react'
 
 export default function ClinicDashboard() {
   const { toast } = useToast()
@@ -44,6 +46,7 @@ export default function ClinicDashboard() {
   const [doctorsList, setDoctorsList] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false)
+  const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false)
 
   const loadData = async () => {
     try {
@@ -156,11 +159,21 @@ export default function ClinicDashboard() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setIsLgpdModalOpen(true)}
+            className="h-9 text-xs font-semibold gap-1.5 border-indigo-300 text-indigo-900 bg-indigo-50/60 hover:bg-indigo-100/80"
+          >
+            <ShieldCheck className="h-4 w-4 text-indigo-600" />
+            Auditoria LGPD (CSV/PDF)
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setIsReportsModalOpen(true)}
             className="h-9 text-xs font-semibold gap-1.5 border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/70"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
-            Relatórios & Exportação (CSV/PDF)
+            Relatórios Clínicos
           </Button>
 
           <Link to="/clinic/agenda">
@@ -534,6 +547,9 @@ export default function ClinicDashboard() {
         doctors={doctorsList}
         stats={stats}
       />
+
+      {/* Modal de Trilha de Auditoria e Conformidade LGPD */}
+      <LgpdAuditReportModal isOpen={isLgpdModalOpen} onClose={() => setIsLgpdModalOpen(false)} />
     </div>
   )
 }

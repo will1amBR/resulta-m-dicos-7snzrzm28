@@ -1,4 +1,5 @@
 import { LandingHero } from '@/components/landing/LandingHero'
+import { LandingOpenModelSection } from '@/components/landing/LandingOpenModelSection'
 import { LandingStats } from '@/components/landing/LandingStats'
 import { LandingProblem } from '@/components/landing/LandingProblem'
 import { LandingFeatures } from '@/components/landing/LandingFeatures'
@@ -9,6 +10,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-white">
       <LandingHero />
+      <LandingOpenModelSection />
       <LandingStats />
       <LandingProblem />
       <LandingFeatures />

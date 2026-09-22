@@ -162,7 +162,7 @@ export async function logAccessAudit(data: {
   details?: string
 }): Promise<AccessAuditLog> {
   try {
-    return await pb.collection('access_audit_log').create<AccessAuditLog>({
+    const createdLog = await pb.collection('access_audit_log').create<AccessAuditLog>({
       patient: data.patientId,
       actor_user: data.actorUser || '',
       actor_name: data.actorName,
@@ -172,6 +172,41 @@ export async function logAccessAudit(data: {
       details: data.details || '',
       ip_address: '189.40.12.88 (Brasil - Seguro LGPD)',
     })
+
+    // Garantia de disparo de notificação imediata in-app para o paciente caso o hook backend demore
+    try {
+      const patientUsers = await pb.collection('users').getList(1, 1, {
+        filter: `patient_link = '${data.patientId}'`,
+      })
+      if (patientUsers.items.length > 0) {
+        const pUser = patientUsers.items[0]
+        const notifTitle =
+          data.action === 'consultou'
+            ? `Histórico Consultado: ${data.actorName}`
+            : data.action === 'concedeu_24h'
+              ? 'Acesso 24h Liberado'
+              : data.action === 'revogou'
+                ? 'Acesso Revogado'
+                : 'Auditoria de Acesso'
+
+        const notifMsg = `O profissional ${data.actorName} (${data.actorRole}) acessou: ${data.resource}${
+          data.details ? ` (${data.details})` : ''
+        }.`
+
+        await pb.collection('notifications').create({
+          user: pUser.id,
+          title: notifTitle,
+          message: notifMsg,
+          type: data.action === 'revogou' ? 'warning' : 'info',
+          read: false,
+          link: '/patient/acessos',
+        })
+      }
+    } catch {
+      // Falha secundária silenciosa
+    }
+
+    return createdLog
   } catch (err) {
     console.warn('Erro ao registrar auditoria de acesso:', err)
     return {} as AccessAuditLog

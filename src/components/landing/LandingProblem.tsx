@@ -8,10 +8,10 @@ const problems = [
 ]
 
 const solutions = [
-  'Agenda integrada com confirmação automática dentro da plataforma',
-  'Documentos organizados em pastas com classificação por IA',
-  'Prescrição integrada com análise cruzada de interações medicamentosas',
-  'Tudo numa tela só — prontuário, agenda, documentos e teleconsulta',
+  'Histórico pertence ao paciente: concessões de 24h com auditoria completa LGPD',
+  'Receitas e documentos com QR Code de verificação pública (/consulta-receita)',
+  'Teleconsulta WebRTC e evolução de exames no tempo numa única tela',
+  'Prescrição integrada com análise cruzada de interações medicamentosas por IA',
 ]
 
 export function LandingProblem() {

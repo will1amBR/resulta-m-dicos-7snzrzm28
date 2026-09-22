@@ -47,6 +47,8 @@ import {
   revokeAccessGrant,
   getAccessAuditLogs,
 } from '@/services/access_grants'
+import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
+import { FileSpreadsheet, Printer } from 'lucide-react'
 
 export default function PatientAccessControls() {
   const { user } = useAuth()
@@ -65,6 +67,7 @@ export default function PatientAccessControls() {
   const [newTargetRole, setNewTargetRole] = useState<'doctor' | 'clinic'>('doctor')
   const [newReason, setNewReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLgpdModalOpen, setIsLgpdModalOpen] = useState(false)
 
   // Carregar dados
   const loadData = async () => {
@@ -262,16 +265,27 @@ export default function PatientAccessControls() {
             </TabsTrigger>
           </TabsList>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            disabled={isLoading}
-            className="text-xs h-8 text-slate-600"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? 'animate-spin' : ''}`} />{' '}
-            Atualizar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLgpdModalOpen(true)}
+              className="text-xs h-8 text-indigo-700 border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 flex items-center gap-1.5"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5 text-indigo-600" />
+              Exportar Trilha LGPD (CSV/PDF)
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              disabled={isLoading}
+              className="text-xs h-8 text-slate-600"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? 'animate-spin' : ''}`} />{' '}
+              Atualizar
+            </Button>
+          </div>
         </div>
 
         {/* TAB 1: CONCESSÕES DE ACESSO */}
@@ -561,6 +575,13 @@ export default function PatientAccessControls() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Relatório LGPD com Filtros de Período e Paciente */}
+      <LgpdAuditReportModal
+        isOpen={isLgpdModalOpen}
+        onClose={() => setIsLgpdModalOpen(false)}
+        initialPatientId={patientId}
+      />
 
       {/* Modal: Conceder Acesso 24 Horas */}
       <Dialog open={grantModalOpen} onOpenChange={setGrantModalOpen}>

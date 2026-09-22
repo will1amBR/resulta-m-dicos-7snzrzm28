@@ -70,20 +70,23 @@ export function LandingHero() {
       <div className="absolute inset-0 bg-grid-slate-700/[0.2] [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
       <div className="relative container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 rounded-full px-4 py-1.5 mb-6">
-            <Stethoscope className="h-4 w-4 text-blue-300" />
-            <span className="text-xs font-medium text-blue-200">Plataforma Médica Unificada</span>
+          <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/40 rounded-full px-4 py-1.5 mb-6 shadow-sm">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+              Pilar Central • Modelo Aberto &amp; LGPD
+            </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up">
-            Uma consulta.
+            O histórico clínico
             <br />
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-              O mesmo ecossistema.
+            <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-blue-400 bg-clip-text text-transparent">
+              pertence ao paciente.
             </span>
           </h1>
-          <p className="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Agenda, pacientes, teleconsulta, prontuário e documentos num só lugar, durante o
-            atendimento. Sem alternar abas, sem copiar e colar.
+          <p className="text-base md:text-lg text-slate-200 mb-8 max-w-2xl mx-auto leading-relaxed">
+            O paciente é dono soberano dos seus dados de saúde. Autorize e revogue acessos de
+            médicos e clínicas com concessões temporárias de 24 horas, auditoria integral
+            transparente e ecossistema clínico completo numa única tela.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -193,15 +196,15 @@ export function LandingHero() {
           {/* Features pills */}
           <div className="flex flex-wrap justify-center gap-6 mt-10 text-slate-400">
             {[
-              { icon: Calendar, label: 'Agenda' },
-              { icon: Users, label: 'Pacientes' },
-              { icon: Video, label: 'Teleconsulta' },
-              { icon: FileText, label: 'Prontuário' },
-              { icon: FolderOpen, label: 'Documentos' },
+              { icon: Stethoscope, label: 'Modelo Aberto 24h' },
+              { icon: Calendar, label: 'Agenda & Pacientes' },
+              { icon: Video, label: 'Teleconsulta WebRTC' },
+              { icon: FileText, label: 'Prontuário & QR Code' },
+              { icon: FolderOpen, label: 'Exames & IA Clínica' },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2 text-xs">
-                <Icon className="h-4 w-4 text-slate-500" />
-                <span>{label}</span>
+                <Icon className="h-4 w-4 text-emerald-400" />
+                <span className="text-slate-300">{label}</span>
               </div>
             ))}
           </div>

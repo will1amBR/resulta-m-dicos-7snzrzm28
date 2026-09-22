@@ -11,44 +11,52 @@ import {
 
 const features = [
   {
-    icon: Calendar,
-    title: 'Agenda Integrada',
-    description: 'Agendamento e confirmação de consultas com visão diária, semanal e mensal.',
-  },
-  {
-    icon: Users,
-    title: 'Gestão de Pacientes',
-    description: 'Cadastro completo, histórico clínico e busca rápida por nome ou CPF.',
-  },
-  {
-    icon: Video,
-    title: 'Teleconsulta',
-    description: 'Atendimento remoto integrado ao prontuário, sem trocar de sistema.',
-  },
-  {
-    icon: FileText,
-    title: 'Prontuário SOAP',
-    description: 'Notas estruturadas com CID-10, prescrições e exportação em PDF.',
-  },
-  {
-    icon: FolderOpen,
-    title: 'Documentos com IA',
-    description: 'Exames, receitas e laudos organizados automaticamente em pastas por IA.',
-  },
-  {
-    icon: Brain,
-    title: 'Análise de Interações',
-    description: 'Alertas em tempo real sobre contraindicações e interações medicamentosas.',
-  },
-  {
     icon: Shield,
-    title: 'LGPD & Segurança',
-    description: 'Servidor no Brasil, conformidade com LGPD e dados criptografados.',
+    title: 'Modelo Aberto & Auditoria LGPD',
+    description:
+      'O paciente é dono soberano do histórico. Concessões de 24h e registro em log de quem consultou com alertas instantâneos.',
   },
   {
     icon: FileCheck,
-    title: 'Validação de CRM',
-    description: 'CRM validado no CFM. CRN, CRP, CRO, COREN e CREFITO por liberação manual.',
+    title: 'Documentos com QR Code Público',
+    description:
+      'Receitas, laudos e atestados verificáveis em /consulta-receita com código de autenticidade instantânea.',
+  },
+  {
+    icon: Video,
+    title: 'Teleconsulta WebRTC Direta',
+    description:
+      'Vídeo, áudio e chat integrados ao prontuário eletrônico sem abrir outras janelas.',
+  },
+  {
+    icon: FileText,
+    title: 'Prontuário SOAP & Transcrição',
+    description:
+      'Evolução estruturada com transcrição de fala por IA, calculadoras de clearance/IMC e CID-10.',
+  },
+  {
+    icon: FolderOpen,
+    title: 'Exames com Evolução Temporal',
+    description:
+      'Upload de exames por pacientes e médicos com categorização automática e gráficos de marcadores no tempo.',
+  },
+  {
+    icon: Brain,
+    title: 'IA de Análise Cruzada de Remédios',
+    description:
+      'Alertas imediatos de risco em interações medicamentosas graves entre novos e contínuos.',
+  },
+  {
+    icon: Calendar,
+    title: 'Agenda & Multi-Consultórios',
+    description:
+      'Agendamento com visão diária, semanal e mensal para médicos autônomos e equipes de clínicas.',
+  },
+  {
+    icon: Users,
+    title: 'Gestão de Pacientes & Portais',
+    description:
+      'Portal do paciente integrado para consultar receitas, solicitar renovações e autorizar acessos.',
   },
 ]
 
