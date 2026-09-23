@@ -293,29 +293,34 @@ export default function DoctorClinicalDocuments() {
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'emitir' | 'historico')}
-        className="w-full space-y-4"
+        className="w-full space-y-4 min-w-0"
       >
-        <TabsList className="bg-slate-100 p-1 rounded-xl">
-          <TabsTrigger
-            value="emitir"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <Plus className="h-4 w-4 text-indigo-600" />
-            <span>Emitir Novo Documento</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="historico"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <Clock className="h-4 w-4 text-slate-600" />
-            <span>Histórico de Documentos</span>
-            {historyList.length > 0 && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-200">
-                {historyList.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full min-w-0">
+          <TabsList className="bg-slate-100 p-1 rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
+            <TabsTrigger
+              value="emitir"
+              className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+            >
+              <Plus className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span className="truncate">Emitir Novo Documento</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="historico"
+              className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+            >
+              <Clock className="h-4 w-4 text-slate-600 shrink-0" />
+              <span className="truncate">Histórico de Documentos</span>
+              {historyList.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4 bg-slate-200 shrink-0"
+                >
+                  {historyList.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ABA 1: EMITIR DOCUMENTO */}
         <TabsContent value="emitir" className="space-y-6">
@@ -610,7 +615,7 @@ export default function DoctorClinicalDocuments() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
               {[
                 { type: 'todos', label: 'Todos' },
                 { type: 'atestado', label: 'Atestados' },
@@ -623,7 +628,7 @@ export default function DoctorClinicalDocuments() {
                   size="sm"
                   variant={historyTypeFilter === item.type ? 'default' : 'outline'}
                   onClick={() => setHistoryTypeFilter(item.type)}
-                  className={`text-xs h-8 whitespace-nowrap ${
+                  className={`text-xs h-8 ${
                     historyTypeFilter === item.type ? 'bg-indigo-600 text-white' : ''
                   }`}
                 >

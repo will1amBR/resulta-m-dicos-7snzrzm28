@@ -131,20 +131,21 @@ export default function ClinicPatients() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={loadData}
             disabled={loading}
-            className="h-9 text-xs"
+            className="h-9 text-xs flex-1 sm:flex-initial justify-center"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} /> Atualizar
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 shrink-0 ${loading ? 'animate-spin' : ''}`} />{' '}
+            Atualizar
           </Button>
 
           <Button
             onClick={() => setNewPatientOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs whitespace-nowrap"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5 shadow-xs flex-1 sm:flex-initial justify-center"
           >
             <Plus className="h-4 w-4 shrink-0" /> Novo Paciente
           </Button>
@@ -261,7 +262,7 @@ export default function ClinicPatients() {
 
       {/* Modal Detalhes do Paciente */}
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md p-4 sm:p-6 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <User className="h-5 w-5 text-emerald-600" /> Ficha Cadastral do Paciente

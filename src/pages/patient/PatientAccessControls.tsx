@@ -241,39 +241,47 @@ export default function PatientAccessControls() {
         onValueChange={(v) => setActiveTab(v as 'concessoes' | 'auditoria')}
         className="w-full space-y-4"
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <TabsList className="bg-slate-100 p-1 rounded-xl">
-            <TabsTrigger
-              value="concessoes"
-              className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-            >
-              <UserCheck className="h-4 w-4 text-blue-600" />
-              <span>Profissionais Autorizados</span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-200">
-                {grants.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger
-              value="auditoria"
-              className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-            >
-              <History className="h-4 w-4 text-slate-600" />
-              <span>Registro de Auditoria (Logs)</span>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-200">
-                {auditLogs.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 min-w-0">
+          <div className="w-full sm:w-auto min-w-0">
+            <TabsList className="bg-slate-100 p-1 rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
+              <TabsTrigger
+                value="concessoes"
+                className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+              >
+                <UserCheck className="h-4 w-4 text-blue-600 shrink-0" />
+                <span className="truncate">Profissionais Autorizados</span>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4 bg-slate-200 shrink-0"
+                >
+                  {grants.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value="auditoria"
+                className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+              >
+                <History className="h-4 w-4 text-slate-600 shrink-0" />
+                <span className="truncate">Registro de Auditoria</span>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4 bg-slate-200 shrink-0"
+                >
+                  {auditLogs.length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsLgpdModalOpen(true)}
-              className="text-xs h-8 text-indigo-700 border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 flex items-center gap-1.5"
+              className="text-xs h-8 text-indigo-700 border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 flex items-center gap-1.5 flex-1 sm:flex-initial justify-center"
             >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-indigo-600" />
-              Exportar Trilha LGPD (CSV/PDF)
+              <FileSpreadsheet className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+              <span>Exportar Trilha LGPD</span>
             </Button>
             <Button
               variant="outline"
@@ -282,7 +290,9 @@ export default function PatientAccessControls() {
               disabled={isLoading}
               className="text-xs h-8 text-slate-600"
             >
-              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? 'animate-spin' : ''}`} />{' '}
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1 shrink-0 ${isLoading ? 'animate-spin' : ''}`}
+              />{' '}
               Atualizar
             </Button>
           </div>

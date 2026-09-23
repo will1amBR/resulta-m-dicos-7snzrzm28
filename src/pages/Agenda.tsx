@@ -74,7 +74,7 @@ export default function Agenda() {
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs overflow-x-auto pb-1 min-w-0">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 text-xs min-w-0">
         {['todos', 'agendada', 'confirmada', 'em_andamento', 'finalizada', 'cancelada'].map(
           (st) => (
             <Button

@@ -286,7 +286,7 @@ export default function PatientRecords() {
       />
 
       {/* Filter Tabs by Type */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs min-w-0">
         <Button
           variant={selectedFilter === 'todos' ? 'default' : 'outline'}
           size="sm"
@@ -301,7 +301,7 @@ export default function PatientRecords() {
           onClick={() => setSelectedFilter('consulta')}
           className="text-xs h-8 flex items-center gap-1.5"
         >
-          <Stethoscope className="h-3.5 w-3.5 text-blue-500" />
+          <Stethoscope className="h-3.5 w-3.5 text-blue-500 shrink-0" />
           Consultas ({events.filter((e) => e.type === 'consulta').length})
         </Button>
         <Button
@@ -310,7 +310,7 @@ export default function PatientRecords() {
           onClick={() => setSelectedFilter('exame')}
           className="text-xs h-8 flex items-center gap-1.5"
         >
-          <FlaskConical className="h-3.5 w-3.5 text-emerald-500" />
+          <FlaskConical className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
           Exames ({events.filter((e) => e.type === 'exame').length})
         </Button>
         <Button
@@ -319,7 +319,7 @@ export default function PatientRecords() {
           onClick={() => setSelectedFilter('procedimento')}
           className="text-xs h-8 flex items-center gap-1.5"
         >
-          <Syringe className="h-3.5 w-3.5 text-purple-500" />
+          <Syringe className="h-3.5 w-3.5 text-purple-500 shrink-0" />
           Procedimentos ({events.filter((e) => e.type === 'procedimento').length})
         </Button>
         <Button
@@ -328,7 +328,7 @@ export default function PatientRecords() {
           onClick={() => setSelectedFilter('prescricao')}
           className="text-xs h-8 flex items-center gap-1.5"
         >
-          <Pill className="h-3.5 w-3.5 text-amber-500" />
+          <Pill className="h-3.5 w-3.5 text-amber-500 shrink-0" />
           Prescrições ({events.filter((e) => e.type === 'prescricao').length})
         </Button>
       </div>

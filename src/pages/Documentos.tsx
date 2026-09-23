@@ -200,8 +200,8 @@ export default function Documentos() {
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-subtle flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-        {/* Folders scroll */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+        {/* Folders wrap */}
+        <div className="flex flex-wrap gap-1.5 min-w-0">
           {[
             { id: 'todos', label: 'Todos' },
             { id: 'exames', label: 'Exames' },
@@ -215,7 +215,7 @@ export default function Documentos() {
               variant={selectedFolder === f.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedFolder(f.id)}
-              className="capitalize text-xs h-8 px-3 whitespace-nowrap shrink-0"
+              className="capitalize text-xs h-8 px-3"
             >
               {f.label}
               {f.id === 'todos' && documents.length > 0 && (

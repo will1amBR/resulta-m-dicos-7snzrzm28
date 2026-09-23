@@ -399,29 +399,34 @@ export default function DoctorReceitas() {
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as 'nova' | 'historico')}
-        className="w-full space-y-4"
+        className="w-full space-y-4 min-w-0"
       >
-        <TabsList className="bg-slate-100 p-1 rounded-xl">
-          <TabsTrigger
-            value="nova"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <Plus className="h-4 w-4 text-blue-600" />
-            <span>Nova Receita</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="historico"
-            className="text-xs px-4 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-xs flex items-center gap-2 font-semibold"
-          >
-            <Clock className="h-4 w-4 text-slate-600" />
-            <span>Histórico de Receitas</span>
-            {historyList.length > 0 && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-200">
-                {historyList.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+        <div className="w-full min-w-0">
+          <TabsList className="bg-slate-100 p-1 rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
+            <TabsTrigger
+              value="nova"
+              className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+            >
+              <Plus className="h-4 w-4 text-blue-600 shrink-0" />
+              <span className="truncate">Nova Receita</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="historico"
+              className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 text-center h-auto min-h-[38px]"
+            >
+              <Clock className="h-4 w-4 text-slate-600 shrink-0" />
+              <span className="truncate">Histórico de Receitas</span>
+              {historyList.length > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0 h-4 bg-slate-200 shrink-0"
+                >
+                  {historyList.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ================================================================= */}
         {/* ABA: NOVA RECEITA */}
@@ -842,14 +847,16 @@ export default function DoctorReceitas() {
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
               {(['todas', 'emitida', 'enviada', 'cancelada'] as const).map((st) => (
                 <Button
                   key={st}
                   size="sm"
                   variant={historyStatusFilter === st ? 'default' : 'outline'}
                   onClick={() => setHistoryStatusFilter(st)}
-                  className="text-xs h-8 capitalize whitespace-nowrap"
+                  className={`text-xs h-8 capitalize ${
+                    historyStatusFilter === st ? 'bg-blue-600 text-white' : ''
+                  }`}
                 >
                   {st === 'todas'
                     ? 'Todas'

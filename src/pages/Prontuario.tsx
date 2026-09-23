@@ -275,7 +275,7 @@ export default function Prontuario() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
           {specialtyTemplates.map((tmpl) => (
             <Button
               key={tmpl.id}
@@ -283,7 +283,7 @@ export default function Prontuario() {
               variant={selectedTemplateId === tmpl.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleApplyTemplate(tmpl.id)}
-              className={`text-xs h-8 whitespace-nowrap shrink-0 ${
+              className={`text-xs h-8 ${
                 selectedTemplateId === tmpl.id ? 'bg-indigo-600 text-white' : ''
               }`}
             >

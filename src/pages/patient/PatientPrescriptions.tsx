@@ -358,7 +358,7 @@ export default function PatientPrescriptions() {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
           {(['todos', 'ativa', 'a_vencer', 'vencida', 'aguardando_renovacao'] as const).map(
             (st) => (
               <Button
@@ -366,7 +366,7 @@ export default function PatientPrescriptions() {
                 size="sm"
                 variant={statusFilter === st ? 'default' : 'outline'}
                 onClick={() => setStatusFilter(st)}
-                className="text-xs h-8 capitalize whitespace-nowrap"
+                className="text-xs h-8 capitalize"
               >
                 {st === 'todos'
                   ? 'Todas as receitas'

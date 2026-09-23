@@ -389,15 +389,15 @@ export default function PatientDocuments() {
       </div>
 
       {/* Filter folders & Search */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+      <div className="space-y-3 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs min-w-0">
           {folders.map((f) => (
             <Button
               key={f.id}
               variant={folder === f.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFolder(f.id)}
-              className="capitalize text-xs h-8 whitespace-nowrap"
+              className="capitalize text-xs h-8"
             >
               {f.label}
               <span className="ml-1.5 text-[10px] opacity-70">
