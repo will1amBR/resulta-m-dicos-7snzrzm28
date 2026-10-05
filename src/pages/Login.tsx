@@ -197,7 +197,9 @@ export default function Login() {
               Criar conta médica
             </Link>
           </p>
-          <p className="text-[10px] text-slate-400">Resulta © 2025 - Segurança em Saúde e LGPD</p>
+          <p className="text-[10px] text-slate-400">
+            Resulta Médicos © 2026 — Segurança em Saúde e LGPD
+          </p>
         </CardFooter>
       </Card>
     </div>

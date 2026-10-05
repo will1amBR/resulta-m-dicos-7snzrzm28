@@ -751,7 +751,7 @@ export default function ClinicEstoque() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-slate-700">Número do Lote</Label>
                   <Input
-                    placeholder="Ex: LT-2025/08"
+                    placeholder="Ex: LT-2026/08"
                     value={movementBatch}
                     onChange={(e) => setMovementBatch(e.target.value)}
                     className="text-xs h-9"

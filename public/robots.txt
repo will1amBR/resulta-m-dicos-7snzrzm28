@@ -1,0 +1,38 @@
+# robots.txt para Resulta Médicos
+# Proteção de indexação para ambientes e rotas restritas
+
+User-agent: *
+Disallow: /dashboard
+Disallow: /clinic
+Disallow: /patient
+Disallow: /staff
+Disallow: /prontuario
+Disallow: /documentos
+Disallow: /receitas
+Disallow: /teleconsulta
+Disallow: /agenda
+Disallow: /pacientes
+Disallow: /configuracoes
+Disallow: /api/
+
+# Rota pública de validação de receitas e landing institucional
+Allow: /
+Allow: /validar/
+Allow: /entrar
+Allow: /cadastro
+
+# Prevenção contra indexadores em mirrors e ambientes de staging/preview
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /

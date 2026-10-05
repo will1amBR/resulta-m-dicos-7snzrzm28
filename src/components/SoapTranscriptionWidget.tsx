@@ -105,7 +105,7 @@ export function SoapTranscriptionWidget({
     }
   }
 
-  // Chamar o gateway de IA Skip ($ai.chat) para estruturar em SOAP
+  // Chamar o serviço de inteligência artificial clínica para estruturar em SOAP
   const handleProcessSoapWithAi = async () => {
     if (!transcript.trim()) {
       toast({
@@ -153,9 +153,7 @@ export function SoapTranscriptionWidget({
             <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
               Transcrição da Consulta → Estruturação SOAP (IA)
             </h4>
-            <p className="text-[10px] text-slate-500">
-              Web Speech API nativa + IA Generativa Skip Cloud
-            </p>
+            <p className="text-[10px] text-slate-500">Web Speech API nativa + IA Clínica Resulta</p>
           </div>
         </div>
 

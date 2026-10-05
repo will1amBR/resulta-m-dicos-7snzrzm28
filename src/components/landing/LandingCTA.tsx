@@ -32,7 +32,9 @@ export function LandingCTA() {
             <Link to="/entrar">Fazer login</Link>
           </Button>
         </div>
-        <p className="text-blue-200 text-xs mt-6">Resulta © 2025 — Segurança em Saúde e LGPD</p>
+        <p className="text-blue-200 text-xs mt-6">
+          Resulta Médicos © 2026 — Segurança em Saúde e LGPD
+        </p>
       </div>
     </section>
   )

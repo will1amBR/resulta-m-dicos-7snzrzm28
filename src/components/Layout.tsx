@@ -58,8 +58,8 @@ export default function Layout() {
           <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 flex flex-col min-w-0">
             <Outlet />
           </main>
-          <footer className="no-print h-8 border-t bg-white px-4 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
-            <span>Resulta Médicos © 2025 - Plataforma Unificada de Gestão Clínica</span>
+          <footer className="no-print min-h-8 py-2 md:py-0 border-t bg-white px-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[11px] text-slate-500 shrink-0">
+            <span>Resulta Médicos © 2026 - Plataforma Unificada de Gestão Clínica</span>
             <span>Conforme LGPD & Regulamentações CFM</span>
           </footer>
         </div>
