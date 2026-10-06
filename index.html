@@ -1,5 +1,4 @@
-<!-- HTML template for the frontend react app: https://developer.mozilla.org/en-US/docs/Web/HTML -->
-<!doctype html>
+<!-- HTML template for the frontend react app: https://developer.mozilla.org/en-US/docs/Web/HTML --><!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -21,16 +20,16 @@
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/og-image.png" />
     <script>
-      (function() {
+      (function () {
         var host = window.location.hostname;
-        var meta = document.createElement('meta');
-        meta.name = 'robots';
+        var meta = document.createElement("meta");
+        meta.name = "robots";
         // Se for o domínio de produção oficial med.glikholding.com.br, indexa com controle;
         // caso contrário (previews, domínios internos/temporários, localhost), bloqueia indexação completamente.
-        if (host === 'med.glikholding.com.br') {
-          meta.content = 'index, follow';
+        if (host === "med.glikholding.com.br") {
+          meta.content = "index, follow";
         } else {
-          meta.content = 'noindex, nofollow, noarchive, nosnippet';
+          meta.content = "noindex, nofollow, noarchive, nosnippet";
         }
         document.head.appendChild(meta);
       })();
