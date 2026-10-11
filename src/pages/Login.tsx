@@ -192,13 +192,13 @@ export default function Login() {
 
         <CardFooter className="flex flex-col gap-2 text-center text-xs text-slate-500 border-t pt-4">
           <p>
-            Ainda não tem conta?{' '}
-            <Link to="/cadastro" className="text-blue-600 font-semibold hover:underline">
-              Criar conta médica
+            Ainda não tem uma conta?{' '}
+            <Link to="/cadastro" className="text-blue-600 font-bold hover:underline">
+              Criar minha conta gratuita
             </Link>
           </p>
-          <p className="text-[10px] text-slate-400">
-            Resulta Médicos © 2026 — Segurança em Saúde e LGPD
+          <p className="text-[11px] text-slate-400">
+            Disponível para Médicos, Clínicas e Pacientes no Modelo Aberto Soberano
           </p>
         </CardFooter>
       </Card>

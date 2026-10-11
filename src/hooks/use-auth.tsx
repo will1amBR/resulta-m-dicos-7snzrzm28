@@ -84,47 +84,84 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (data: SignUpData) => {
     try {
       const userData: Record<string, any> = {
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         password: data.password,
         passwordConfirm: data.password,
-        name: data.name,
+        name: data.name.trim(),
         role: data.role,
       }
 
       if (data.role === 'doctor') {
-        userData.crm = data.crm
-        userData.specialty = data.specialty
-        userData.council_type = data.councilType
-        userData.council_number = data.councilNumber
+        userData.crm = data.councilNumber || data.crm || ''
+        userData.council_number = data.councilNumber || data.crm || ''
+        userData.council_type = data.councilType || 'CRM'
+        if (data.specialty) {
+          userData.specialty = data.specialty
+        }
+        // Médicos recém cadastrados começam com registro profissional para aprovação rápida
+        userData.council_approved = false
+        userData.certificate_status = 'nao_enviado'
       } else if (data.role === 'clinic') {
-        userData.cpf_cnpj = data.cnpj
-        userData.clinic_address = data.clinicAddress
-        userData.clinic_contact = data.clinicContact
+        userData.cpf_cnpj = data.cnpj || ''
+        userData.clinic_address = data.clinicAddress || ''
+        userData.clinic_contact = data.clinicContact || ''
       } else if (data.role === 'patient') {
-        userData.cpf_cnpj = data.cpf
+        userData.cpf_cnpj = data.cpf || ''
       }
 
+      // 1. Cria usuário na coleção users
       const created = await pb.collection('users').create(userData)
-      await pb.collection('users').authWithPassword(data.email, data.password)
 
+      // 2. Autentica imediatamente
+      await pb.collection('users').authWithPassword(userData.email, data.password)
+
+      // 3. Se for paciente, vincula ou cria registro na tabela patients
       if (data.role === 'patient' && data.cpf) {
         let patientRecord
         try {
           patientRecord = await pb.collection('patients').getFirstListItem(`cpf = "${data.cpf}"`)
         } catch {
-          patientRecord = await pb.collection('patients').create({
-            name: data.name,
-            cpf: data.cpf,
-            phone: data.phone || '',
-            email: data.email,
-            birth_date: data.birthDate || undefined,
-          })
+          try {
+            patientRecord = await pb.collection('patients').create({
+              name: data.name.trim(),
+              cpf: data.cpf.trim(),
+              phone: data.phone || '',
+              email: userData.email,
+              birth_date: data.birthDate || undefined,
+            })
+          } catch {
+            // Se falhar ao criar o paciente por restrição ou já existir, tenta buscar novamente
+            try {
+              patientRecord = await pb
+                .collection('patients')
+                .getFirstListItem(`cpf = "${data.cpf}"`)
+            } catch {
+              /* ignora e não bloqueia cadastro */
+            }
+          }
         }
-        await pb.collection('users').update(created.id, { patient_link: patientRecord.id })
+        if (patientRecord?.id) {
+          try {
+            await pb.collection('users').update(created.id, { patient_link: patientRecord.id })
+          } catch {
+            /* ignore */
+          }
+        }
       }
 
+      // Tenta enviar verificação de email sem travar o cadastro caso o SMTP não esteja configurado
+      try {
+        await pb.collection('users').requestVerification(userData.email)
+      } catch {
+        // SMTP pode não estar configurado no ambiente de teste; cadastro prossegue normalmente
+      }
+
+      // Atualiza o estado do usuário logado
+      await refreshUser()
+
       return { error: null }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro no cadastro:', error)
       return { error }
     }
   }

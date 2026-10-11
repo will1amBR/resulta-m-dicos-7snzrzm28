@@ -93,19 +93,19 @@ export function LandingHero() {
             <Button
               asChild
               size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-600/25"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 h-12 px-6"
             >
               <Link to="/cadastro">
-                Começar agora <ArrowRight className="ml-2 h-4 w-4" />
+                Criar Conta Gratuita <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button
               asChild
               size="lg"
               variant="outline"
-              className="border-slate-600 text-white hover:bg-slate-800"
+              className="border-slate-600 text-white hover:bg-slate-800 h-12 px-6 font-semibold"
             >
-              <Link to="/entrar">Já tenho conta</Link>
+              <Link to="/entrar">Já tenho conta / Login</Link>
             </Button>
           </div>
 

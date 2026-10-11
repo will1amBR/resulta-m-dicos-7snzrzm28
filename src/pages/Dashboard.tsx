@@ -537,15 +537,25 @@ export default function Dashboard() {
                   </Badge>
                 </div>
                 <p className="text-[11px] text-blue-100">
-                  Inicie chamada de vídeo e compartilhamento de tela.
+                  Inicie chamada de vídeo e compartilhamento de tela para {activePatient.name}.
                 </p>
-                <Button
-                  size="sm"
-                  onClick={() => navigate('/teleconsulta')}
-                  className="w-full bg-white text-blue-900 hover:bg-blue-50 text-xs font-semibold h-8"
-                >
-                  <Video className="h-3.5 w-3.5 mr-1.5" /> Abrir Sala Virtual
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => navigate('/teleconsulta')}
+                    className="bg-white text-blue-900 hover:bg-blue-50 text-xs font-semibold h-8"
+                  >
+                    <Video className="h-3.5 w-3.5 mr-1.5" /> Sala Virtual
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate('/doctor/receitas')}
+                    className="bg-blue-700/60 border-white/40 text-white hover:bg-blue-700 text-xs font-semibold h-8"
+                  >
+                    <FileCheck className="h-3.5 w-3.5 mr-1.5" /> Receitas RX
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">

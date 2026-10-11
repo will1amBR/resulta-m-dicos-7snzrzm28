@@ -55,6 +55,14 @@ const App = () => (
 
           <Route element={<Layout />}>
             <Route
+              path="/dashboard"
+              element={
+                <RoleGuard allow={['doctor', 'admin']}>
+                  <Dashboard />
+                </RoleGuard>
+              }
+            />
+            <Route
               path="/admin/conselhos"
               element={
                 <RoleGuard allow={['admin', 'clinic', 'secretaria']}>

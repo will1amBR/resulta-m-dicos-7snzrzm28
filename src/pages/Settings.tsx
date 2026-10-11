@@ -236,15 +236,17 @@ export default function Settings() {
               <Button type="submit" size="sm" className="bg-blue-600 hover:bg-blue-700">
                 Salvar Alterações
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/admin/councils')}
-                className="text-xs"
-              >
-                Painel Admin
-              </Button>
+              {(user?.role === 'admin' || user?.role === 'clinic') && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/admin/conselhos')}
+                  className="text-xs"
+                >
+                  Painel de Conselhos
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>
