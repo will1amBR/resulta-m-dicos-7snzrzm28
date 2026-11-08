@@ -16,8 +16,10 @@ import {
   Filter,
   RefreshCw,
   Search,
+  UserPlus,
 } from 'lucide-react'
-import { getUnapprovedUsers, approveUserCouncil } from '@/services/admin'
+import { getUnapprovedUsers, approveUserCouncil, getPendingCouncilDoctors } from '@/services/admin'
+import { NewRegistrationsPanel } from '@/components/NewRegistrationsPanel'
 import { getPendingRenewalPrescriptions, updatePrescriptionStatus } from '@/services/prescriptions'
 import { getPatients } from '@/services/patients'
 import { getClinicDoctors } from '@/services/clinic'
@@ -63,7 +65,20 @@ interface PendingUser {
 
 export default function AdminCouncils() {
   const { toast } = useToast()
-  const [activeTab, setActiveTab] = useState<'consultas' | 'receitas' | 'conselhos'>('consultas')
+  const [activeTab, setActiveTab] = useState<
+    'consultas' | 'receitas' | 'conselhos' | 'novos-cadastros'
+  >('novos-cadastros')
+
+  // Contador de novos cadastros (médicos com conselho pendente) — usado no badge da aba
+  const [pendingRegistrationsCount, setPendingRegistrationsCount] = useState(0)
+  const loadPendingRegistrationsCount = async () => {
+    try {
+      const list = await getPendingCouncilDoctors()
+      setPendingRegistrationsCount(list.length)
+    } catch {
+      /* mantém o valor anterior */
+    }
+  }
 
   // ==========================================
   // ABA 1: CADASTRAR CONSULTA VÁLIDA (SECRETARIA)
@@ -153,6 +168,7 @@ export default function AdminCouncils() {
     loadInitialData()
     loadRenewals()
     loadUsers()
+    loadPendingRegistrationsCount()
   }, [])
 
   // Auto-fill specialty when doctor is selected
@@ -332,11 +348,26 @@ export default function AdminCouncils() {
       {/* Tabs */}
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as 'consultas' | 'receitas' | 'conselhos')}
+        onValueChange={(v) =>
+          setActiveTab(v as 'consultas' | 'receitas' | 'conselhos' | 'novos-cadastros')
+        }
         className="space-y-4 w-full min-w-0"
       >
         <div className="w-full min-w-0">
-          <TabsList className="bg-slate-100 p-1 rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-3 gap-1">
+          <TabsList className="bg-slate-100 p-1 rounded-xl h-auto w-full grid grid-cols-1 sm:grid-cols-4 gap-1">
+            <TabsTrigger
+              value="novos-cadastros"
+              className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-violet-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 whitespace-normal text-center h-auto min-h-[38px]"
+            >
+              <UserPlus className="h-4 w-4 text-violet-600 shrink-0" />
+              <span className="truncate sm:whitespace-normal">Novos Cadastros</span>
+              {pendingRegistrationsCount > 0 && (
+                <Badge className="text-[10px] px-1.5 py-0 h-4 bg-violet-600 text-white hover:bg-violet-600 shrink-0">
+                  {pendingRegistrationsCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+
             <TabsTrigger
               value="consultas"
               className="text-xs px-3 py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-900 data-[state=active]:shadow-xs flex items-center justify-center gap-2 font-semibold min-w-0 whitespace-normal text-center h-auto min-h-[38px]"
@@ -372,6 +403,13 @@ export default function AdminCouncils() {
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {/* ================================================================= */}
+        {/* ABA 0: NOVOS CADASTROS AGUARDANDO APROVAÇÃO */}
+        {/* ================================================================= */}
+        <TabsContent value="novos-cadastros" className="min-w-0">
+          <NewRegistrationsPanel onCountChange={setPendingRegistrationsCount} />
+        </TabsContent>
 
         {/* ================================================================= */}
         {/* ABA 1: CADASTRAR CONSULTA VÁLIDA PELA SECRETARIA */}
