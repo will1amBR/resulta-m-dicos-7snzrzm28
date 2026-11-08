@@ -18,7 +18,7 @@ import {
   Search,
   UserPlus,
 } from 'lucide-react'
-import { getUnapprovedUsers, approveUserCouncil, getPendingCouncilDoctors } from '@/services/admin'
+import { getPendingCouncilDoctors, reviewCouncilRegistration } from '@/services/admin'
 import { NewRegistrationsPanel } from '@/components/NewRegistrationsPanel'
 import { getPendingRenewalPrescriptions, updatePrescriptionStatus } from '@/services/prescriptions'
 import { getPatients } from '@/services/patients'
@@ -155,7 +155,7 @@ export default function AdminCouncils() {
   const loadUsers = async () => {
     setLoadingUsers(true)
     try {
-      const users = await getUnapprovedUsers()
+      const users = await getPendingCouncilDoctors()
       setPendingUsers(users as unknown as PendingUser[])
     } catch {
       setPendingUsers([])
@@ -298,15 +298,20 @@ export default function AdminCouncils() {
     }
   }
 
-  // Handle Approve Council
+  // Handle Approve Council (via hook backend, com notificação in-app no servidor)
   const handleApproveCouncil = async (userId: string) => {
     setApprovingUserId(userId)
     try {
-      await approveUserCouncil(userId)
+      await reviewCouncilRegistration(userId, 'approve')
       toast({ title: 'Registro profissional aprovado com sucesso!' })
       setPendingUsers((prev) => prev.filter((u) => u.id !== userId))
-    } catch {
-      toast({ title: 'Erro ao aprovar registro', variant: 'destructive' })
+      loadPendingRegistrationsCount()
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao aprovar registro',
+        description: err?.message || 'Tente novamente.',
+        variant: 'destructive',
+      })
     } finally {
       setApprovingUserId(null)
     }
