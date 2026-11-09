@@ -15,7 +15,7 @@ import {
   FileCheck2,
 } from 'lucide-react'
 import { getClinicDoctors } from '@/services/clinic'
-import { approveUserCouncil } from '@/services/admin'
+import { reviewCouncilRegistration } from '@/services/admin'
 import { getSpecialties } from '@/services/specialties'
 import { Specialty } from '@/types/clinical'
 import { Button } from '@/components/ui/button'
@@ -92,17 +92,22 @@ export default function ClinicTeam() {
   const handleApprove = async (userId: string) => {
     setApproving(userId)
     try {
-      await approveUserCouncil(userId)
+      await reviewCouncilRegistration(userId, 'approve')
       toast({
         title: 'Registro profissional aprovado!',
-        description: 'O médico agora está habilitado e ativo no corpo clínico da clínica.',
+        description:
+          'O médico agora está habilitado e ativo no corpo clínico da clínica (notificado no header).',
       })
       loadData()
       if (selectedDoctor && selectedDoctor.id === userId) {
         setSelectedDoctor({ ...selectedDoctor, council_approved: true })
       }
-    } catch {
-      toast({ title: 'Erro ao aprovar registro', variant: 'destructive' })
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao aprovar registro',
+        description: err?.message || 'Tente novamente.',
+        variant: 'destructive',
+      })
     } finally {
       setApproving(null)
     }

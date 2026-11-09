@@ -44,3 +44,10 @@ export async function reviewCouncilRegistration(
     },
   )
 }
+
+/**
+ * Alias de compatibilidade retroativa para aprovar conselho de um usuário.
+ */
+export async function approveUserCouncil(userId: string) {
+  return reviewCouncilRegistration(userId, 'approve')
+}

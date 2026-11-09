@@ -31,6 +31,7 @@ import {
 } from '@/types/clinical'
 import { MedicationAlerts } from '@/components/MedicationAlerts'
 import { DoctorOnboardingTour } from '@/components/DoctorOnboardingTour'
+import { CouncilPendingBanner } from '@/components/CouncilPendingBanner'
 import { analyzeMedications } from '@/services/medications'
 import { getDoctorPrescriptions } from '@/services/prescriptions'
 import { getDoctorClinicalDocuments } from '@/services/clinical_documents'
@@ -216,6 +217,11 @@ export default function Dashboard() {
 
   return (
     <div className="h-full flex flex-col gap-4">
+      {/* Banner de status do conselho profissional (pendente/aprovado em tempo real) */}
+      {user?.role === 'doctor' && (
+        <CouncilPendingBanner userId={user.id} initialApproved={user.council_approved} />
+      )}
+
       {/* Onboarding guiado para médicos novatos */}
       {user?.role === 'doctor' && <DoctorOnboardingTour user={user} />}
 

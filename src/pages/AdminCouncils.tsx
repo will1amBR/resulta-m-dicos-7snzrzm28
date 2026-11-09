@@ -18,6 +18,7 @@ import {
   Search,
   UserPlus,
 } from 'lucide-react'
+import { useRealtime } from '@/hooks/use-realtime'
 import { getPendingCouncilDoctors, reviewCouncilRegistration } from '@/services/admin'
 import { NewRegistrationsPanel } from '@/components/NewRegistrationsPanel'
 import { getPendingRenewalPrescriptions, updatePrescriptionStatus } from '@/services/prescriptions'
@@ -170,6 +171,17 @@ export default function AdminCouncils() {
     loadUsers()
     loadPendingRegistrationsCount()
   }, [])
+
+  // Atualização em tempo real quando usuários sofrem alteração (novo cadastro ou aprovação/rejeição)
+  useRealtime('users', () => {
+    loadPendingRegistrationsCount()
+    loadUsers()
+  })
+
+  // Atualização em tempo real para receitas quando sofrem alteração
+  useRealtime('prescriptions', () => {
+    loadRenewals()
+  })
 
   // Auto-fill specialty when doctor is selected
   const handleDoctorChange = (docId: string) => {
