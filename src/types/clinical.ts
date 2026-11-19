@@ -224,9 +224,15 @@ export interface ClinicStats {
 
 export interface MedicationAlert {
   medication: string
-  severity: 'high' | 'medium' | 'none'
-  message: string
+  severity?: 'high' | 'medium' | 'none'
+  message?: string
   suggestion?: string
+  // Novo formato da análise em duas camadas (determinística + IA)
+  gravity?: 'alto' | 'precaucao' | 'ok'
+  pair?: string
+  reason?: string
+  suggested_alternative?: string
+  source?: 'deterministico' | 'ia'
 }
 
 export interface Cid10Code {
