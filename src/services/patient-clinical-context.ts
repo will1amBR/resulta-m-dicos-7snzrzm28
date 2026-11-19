@@ -62,6 +62,37 @@ async function getLatestCreatinine(
   }
 }
 
+/**
+ * Condições crônicas declaradas no perfil do paciente (campo do cadastro,
+ * texto separado por ';' — mesmo formato das alergias). Cada item pode vir
+ * como "Nome" ou "CID Nome"/"Nome (CID)".
+ */
+function splitProfileText(raw?: string | null): string[] {
+  return String(raw || '')
+    .split(/[;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+function extractCidFromLabel(label: string): string | null {
+  const m = label.match(/\b[A-Z]\d{2}(?:\.\d)?\b/)
+  return m ? m[0] : null
+}
+
+async function getProfileChronicConditions(
+  patientId: string,
+): Promise<Array<{ code: string; description: string }>> {
+  try {
+    const rec = await pb.collection('patients').getOne(patientId)
+    return splitProfileText((rec as any)?.chronic_conditions).map((label) => ({
+      code: extractCidFromLabel(label) || '',
+      description: label.replace(/\s*\([^)]*CID[^)]*\)\s*/gi, ' ').trim() || label,
+    }))
+  } catch {
+    return []
+  }
+}
+
 /** CID-10 ativos: junta o histórico de prontuários (registros mais recentes). */
 async function getChronicConditions(
   patientId: string,
@@ -80,6 +111,19 @@ async function getChronicConditions(
       }
     }
     return Array.from(byCode.entries()).map(([code, description]) => ({ code, description }))
+  } catch {
+    return []
+  }
+}
+
+/** Medicamentos em uso contínuo declarados no perfil do paciente. */
+async function getProfileContinuousMedications(patientId: string): Promise<string[]> {
+  try {
+    const rec = await pb.collection('patients').getOne(patientId)
+    return splitProfileText((rec as any)?.continuous_medications).map((label) =>
+      // Formato gravado pelo perfil: "Nome — dosagem"; mantém só o nome p/ casar regras
+      label.split(/\s+—\s+/)[0].trim(),
+    )
   } catch {
     return []
   }
@@ -145,12 +189,36 @@ export async function buildPatientClinicalContext(
 
   const source: Patient | null = patientRecord || (patient as Patient)
 
-  const [allergies, conditions, meds, renal] = await Promise.all([
-    getPatientAllergies(patient.id),
-    getChronicConditions(patient.id),
-    getContinuousMedications(patient.id),
-    getLatestCreatinine(patient.id),
-  ])
+  const [allergies, profileConditions, recordConditions, profileMeds, rxMeds, renal] =
+    await Promise.all([
+      getPatientAllergies(patient.id),
+      getProfileChronicConditions(patient.id),
+      getChronicConditions(patient.id),
+      getProfileContinuousMedications(patient.id),
+      getContinuousMedications(patient.id),
+      getLatestCreatinine(patient.id),
+    ])
+
+  // Condições crônicas: união do perfil declarado + histórico (CID-10),
+  // sem duplicar pelo código CID nem pela descrição.
+  const seenCondition = new Set<string>()
+  const conditions: Array<{ code: string; description: string }> = []
+  for (const cond of [...profileConditions, ...recordConditions]) {
+    const key = (cond.code || cond.description).toLowerCase()
+    if (!key || seenCondition.has(key)) continue
+    seenCondition.add(key)
+    conditions.push(cond)
+  }
+
+  // Uso contínuo: união do perfil declarado + prescrições ativas (case-insensitive).
+  const seenMeds = new Set<string>()
+  const meds: string[] = []
+  for (const med of [...profileMeds, ...rxMeds]) {
+    const key = med.toLowerCase()
+    if (!key || seenMeds.has(key)) continue
+    seenMeds.add(key)
+    meds.push(med)
+  }
 
   return {
     patient_id: patient.id,

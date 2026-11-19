@@ -66,6 +66,65 @@ routerAdd(
           }
         }
       }
+      // Condições crônicas declaradas no perfil do cadastro (texto separado
+      // por ';' ou quebra de linha — mesmo formato do campo allergies).
+      // Cada item pode vir como "Nome", "E11 Diabetes" ou "Diabetes (E11)".
+      var rawChronic = ''
+      try {
+        rawChronic = patientRec.getString('chronic_conditions') || ''
+      } catch (ccErr) {
+        rawChronic = ''
+      }
+      if (rawChronic) {
+        var ccParts = rawChronic.split(/[;\n]/)
+        for (var ccP = 0; ccP < ccParts.length; ccP++) {
+          var ccLabel = String(ccParts[ccP]).trim()
+          if (!ccLabel) continue
+          var ccCode = ccLabel.match(/\b[A-Z]\d{2}(?:\.\d)?\b/)
+          var ccDesc = ccLabel.replace(/\s*\([^)]*CID[^)]*\)\s*/gi, ' ').trim()
+          if (ccCode && !ccCode.index) {
+            // formato "E11 Diabetes": remove o código do início da descrição
+            ccDesc =
+              ccLabel
+                .substring(ccCode[0].length)
+                .replace(/^[\s\-–—:]+/, '')
+                .trim() || ccLabel
+          }
+          var ccEntry = { code: ccCode ? ccCode[0] : '', description: ccDesc || ccLabel }
+          var ccExists = false
+          for (var ccE = 0; ccE < ctx.chronic_conditions.length; ccE++) {
+            var eC = ctx.chronic_conditions[ccE]
+            if (
+              (ccEntry.code && eC.code === ccEntry.code) ||
+              (!ccEntry.code && eC.description.toLowerCase() === ccEntry.description.toLowerCase())
+            ) {
+              ccExists = true
+              break
+            }
+          }
+          if (!ccExists) ctx.chronic_conditions.push(ccEntry)
+        }
+      }
+
+      // Medicamentos de uso contínuo declarados no perfil do cadastro.
+      // Formato gravado pelo perfil: "Nome — dosagem"; mantém só o nome.
+      var rawCont = ''
+      try {
+        rawCont = patientRec.getString('continuous_medications') || ''
+      } catch (cmErr) {
+        rawCont = ''
+      }
+      if (rawCont) {
+        var cmParts = rawCont.split(/[;\n]/)
+        for (var cmP = 0; cmP < cmParts.length; cmP++) {
+          var cmLabel = String(cmParts[cmP]).trim()
+          if (!cmLabel) continue
+          var cmName = cmLabel.split(/\s+[-–—]\s+/)[0].trim()
+          if (cmName && ctx.continuous_medications.indexOf(cmName) === -1) {
+            ctx.continuous_medications.push(cmName)
+          }
+        }
+      }
     } catch (_) {}
 
     // Condições crônicas: CID-10 do histórico de prontuários

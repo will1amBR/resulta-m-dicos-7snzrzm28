@@ -36,6 +36,7 @@ import { ClinicReportsModal } from '@/components/ClinicReportsModal'
 import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
 import { ClinicAccessGrantsPanel } from '@/components/ClinicAccessGrantsPanel'
 import { ClinicSupplyConsumptionPanel } from '@/components/ClinicSupplyConsumptionPanel'
+import ClinicPrescriptionQualityPanel from '@/components/ClinicPrescriptionQualityPanel'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import { ShieldCheck } from 'lucide-react'
@@ -323,6 +324,9 @@ export default function ClinicDashboard() {
 
       {/* FRENTE 1: Painel Executivo de Consumo de Insumos & Custo por Atendimento */}
       <ClinicSupplyConsumptionPanel />
+
+      {/* Painel de Qualidade: taxa de alertas ignorados por médico */}
+      <ClinicPrescriptionQualityPanel />
 
       {/* Gráficos Analíticos com Recharts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

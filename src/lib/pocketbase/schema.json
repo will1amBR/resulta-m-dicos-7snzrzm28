@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T04:55:54.414Z",
+  "generatedAt": "2026-11-19T22:48:05.640Z",
   "collections": [
     {
       "name": "users",
@@ -218,6 +218,18 @@
         },
         {
           "name": "allergies",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "chronic_conditions",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "continuous_medications",
           "type": "text",
           "required": false,
           "system": false
@@ -1843,6 +1855,32 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "review_notes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "reviewed_by",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "reviewed_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "review_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["pendente", "observado", "inaceitavel"]
         }
       ],
       "indexes": [

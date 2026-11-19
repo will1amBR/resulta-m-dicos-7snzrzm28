@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ShieldAlert, Calendar, RefreshCw, ChevronDown } from 'lucide-react'
+import { ShieldAlert, Calendar, RefreshCw, ChevronDown, ClipboardCheck, Save } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,13 +17,23 @@ import { useToast } from '@/hooks/use-toast'
 import { getClinicDoctors } from '@/services/clinic'
 import {
   getIgnoredMedicationAlerts,
+  reviewIgnoredMedicationAlert,
   IgnoredMedicationAlert,
 } from '@/services/ignored-medication-alerts'
+import { createNotification } from '@/services/notifications'
+import { useAuth } from '@/hooks/use-auth'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
 const RISK_LABEL: Record<string, string> = {
   contraindicacao: 'Contraindicação',
   precaucao: 'Precaução',
+}
+
+const REVIEW_STATUS_LABEL: Record<string, string> = {
+  pendente: 'Pendente de revisão',
+  observado: 'Observado',
+  inaceitavel: 'Justificativa inaceitável',
 }
 
 function RiskBadge({ level }: { level: string }) {
@@ -51,6 +61,7 @@ function formatDate(iso?: string) {
 
 export default function ClinicIgnoredAlerts() {
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const [alerts, setAlerts] = useState<IgnoredMedicationAlert[]>([])
   const [doctors, setDoctors] = useState<Array<{ id: string; name?: string }>>([])
@@ -99,6 +110,102 @@ export default function ClinicIgnoredAlerts() {
     const prec = alerts.filter((a) => a.risk_level === 'precaucao').length
     return { total: alerts.length, contra, prec }
   }, [alerts])
+
+  // Revisão: rascunho por registro (aberto no <details> do alerta)
+  const [reviewDraft, setReviewDraft] = useState<Record<string, { notes: string; status: string }>>(
+    {},
+  )
+  const [savingReviewId, setSavingReviewId] = useState<string | null>(null)
+
+  const draftFor = (a: IgnoredMedicationAlert) =>
+    reviewDraft[a.id] || {
+      notes: a.review_notes || '',
+      status: a.review_status || 'pendente',
+    }
+
+  const setDraft = (id: string, patch: Partial<{ notes: string; status: string }>) =>
+    setReviewDraft((prev) => ({
+      ...prev,
+      [id]: { ...draftForId(id), ...patch },
+    }))
+
+  // Helper estável para leitura do rascunho dentro do setDraft
+  function draftForId(id: string) {
+    const a = alerts.find((x) => x.id === id)
+    return (
+      reviewDraft[id] || { notes: a?.review_notes || '', status: a?.review_status || 'pendente' }
+    )
+  }
+
+  const handleSaveReview = async (a: IgnoredMedicationAlert) => {
+    const draft = draftFor(a)
+    const notes = draft.notes.trim()
+    if (notes.length < 5) {
+      toast({
+        title: 'Observação muito curta',
+        description: 'Escreva a observação da revisão (mínimo 5 caracteres) antes de salvar.',
+        variant: 'destructive',
+      })
+      return
+    }
+    if (draft.status === 'pendente') {
+      toast({
+        title: 'Selecione um resultado da revisão',
+        description: 'Escolha "Observado" ou "Justificativa inaceitável".',
+        variant: 'destructive',
+      })
+      return
+    }
+    setSavingReviewId(a.id)
+    try {
+      const updated = await reviewIgnoredMedicationAlert(a.id, {
+        review_notes: notes,
+        review_status: draft.status as 'observado' | 'inaceitavel',
+        reviewed_by: user?.id || '',
+        reviewed_at: new Date().toISOString(),
+      })
+
+      // Notifica o médico autor do alerta (mesma coleção/flow das demais notificações in-app)
+      if (a.doctor) {
+        const patName = a.expand?.patient?.name || 'o paciente'
+        await createNotification({
+          userId: a.doctor,
+          title:
+            draft.status === 'inaceitavel'
+              ? 'Justificativa de alerta reprovada pela clínica'
+              : 'Sua justificativa de alerta foi revisada pela clínica',
+          message:
+            draft.status === 'inaceitavel'
+              ? `A clínica considerou INACEITÁVEL a justificativa do alerta de ${RISK_LABEL[a.risk_level] || a.risk_level} para ${a.medication_name} (${patName}). Observação: ${notes}`
+              : `A clínica observou a justificativa do alerta de ${RISK_LABEL[a.risk_level] || a.risk_level} para ${a.medication_name} (${patName}). Observação: ${notes}`,
+          type: 'warning',
+          link: '/doctor/receitas',
+        }).catch(() => {
+          // Falha ao notificar não deve impedir o registro da revisão
+        })
+      }
+
+      // Atualiza o registro local com a resposta do servidor
+      setAlerts((prev) => prev.map((x) => (x.id === a.id ? { ...x, ...updated } : x)))
+      setReviewDraft((prev) => {
+        const next = { ...prev }
+        delete next[a.id]
+        return next
+      })
+      toast({
+        title: 'Revisão registrada',
+        description: 'O médico autor foi notificado sobre a observação da clínica.',
+      })
+    } catch {
+      toast({
+        title: 'Erro ao salvar revisão',
+        description: 'Não foi possível registrar a revisão. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSavingReviewId(null)
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-16 min-w-0">
@@ -288,6 +395,77 @@ export default function ClinicIgnoredAlerts() {
                         <p className="text-xs text-slate-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5 mt-1 break-words whitespace-pre-wrap">
                           {a.justification}
                         </p>
+                      </div>
+
+                      {/* Revisão/observação da clínica */}
+                      <div className="pt-1 border-t border-slate-100">
+                        {a.review_notes ? (
+                          <div className="mt-2.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex flex-wrap items-center gap-1.5">
+                              Revisão da clínica
+                              <Badge
+                                className={cn(
+                                  'text-[10px] font-bold',
+                                  a.review_status === 'inaceitavel'
+                                    ? 'bg-red-100 text-red-700 border border-red-300'
+                                    : 'bg-blue-100 text-blue-700 border border-blue-300',
+                                )}
+                              >
+                                {REVIEW_STATUS_LABEL[a.review_status || ''] || a.review_status}
+                              </Badge>
+                            </p>
+                            <p className="text-xs text-slate-700 mt-1 break-words whitespace-pre-wrap">
+                              {a.review_notes}
+                            </p>
+                            {a.reviewed_at ? (
+                              <p className="text-[10px] text-slate-400 mt-1">
+                                Revisado em {formatDate(a.reviewed_at)}
+                                {a.expand?.reviewed_by?.name
+                                  ? ` por ${a.expand.reviewed_by.name}`
+                                  : ''}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
+
+                        <div className="mt-3 space-y-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                            {a.review_notes ? 'Nova revisão / observação' : 'Registrar revisão'}
+                          </p>
+                          <Textarea
+                            value={draftFor(a).notes}
+                            onChange={(e) => setDraft(a.id, { notes: e.target.value })}
+                            placeholder="Observação da revisão clínica (será enviada ao médico autor)..."
+                            className="text-xs min-h-[64px] w-full"
+                          />
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
+                            <Select
+                              value={draftFor(a).status}
+                              onValueChange={(v) => setDraft(a.id, { status: v })}
+                            >
+                              <SelectTrigger className="h-9 text-xs w-full sm:w-auto sm:min-w-[220px]">
+                                <SelectValue placeholder="Resultado da revisão" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="observado">Observado</SelectItem>
+                                <SelectItem value="inaceitavel">
+                                  Justificativa inaceitável
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveReview(a)}
+                              disabled={savingReviewId === a.id}
+                              className="h-9 text-xs shrink-0 sm:ml-auto"
+                            >
+                              <Save className="h-3.5 w-3.5 mr-1.5" />
+                              {savingReviewId === a.id
+                                ? 'Salvando...'
+                                : 'Salvar revisão e notificar'}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </details>

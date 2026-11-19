@@ -92,9 +92,10 @@ export default function PatientProfile() {
 
   const [isSaving, setIsSaving] = useState(false)
 
-  // Carrega alergias gravadas no cadastro do paciente (coleção patients)
+  // Carrega alergias, condições crônicas e medicações contínuas gravadas no
+  // cadastro do paciente (coleção patients)
   useEffect(() => {
-    const loadAllergies = async () => {
+    const loadHealthProfile = async () => {
       let patientId: string | undefined =
         user?.patient_link && typeof user.patient_link === 'string'
           ? user.patient_link
@@ -108,6 +109,47 @@ export default function PatientProfile() {
           .map((s: string) => s.trim())
           .filter(Boolean)
         setAllergies(list)
+
+        // Condições crônicas: "CID Nome" ou "Nome (CID)" separados por ';'
+        const rawConditions = String((rec as any)?.chronic_conditions || '')
+        if (rawConditions.trim()) {
+          const items = rawConditions
+            .split(/[;\n]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((entry, i) => {
+              const cidMatch = entry.match(/\b[A-Z]\d{2}(?:\.\d)?\b/)
+              const cid = cidMatch ? cidMatch[0] : ''
+              const name = entry
+                .replace(cidMatch ? cidMatch[0] : '', '')
+                .replace(/[()]/g, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim()
+              return { id: `${Date.now()}-${i}`, cid: cid || '—', name: name || entry }
+            })
+          setChronicConditions(items)
+        } else {
+          setChronicConditions([])
+        }
+
+        // Medicações contínuas: "Nome — dosagem" separados por ';'
+        const rawMeds = String((rec as any)?.continuous_medications || '')
+        if (rawMeds.trim()) {
+          const items = rawMeds
+            .split(/[;\n]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((entry, i) => {
+              const sep = entry.split(/\s+—\s+/)
+              const name = (sep[0] || entry).trim()
+              const dosage = sep.length > 1 ? sep.slice(1).join(' — ').trim() : 'Uso contínuo'
+              return { id: `${Date.now()}-${i}`, name, dosage }
+            })
+          setContinuousMedications(items)
+        } else {
+          setContinuousMedications([])
+        }
+
         if (rec?.birth_date) setBirthDate(rec.birth_date.slice(0, 10))
         if (rec?.name) setName(rec.name)
         if (rec?.email) setEmail(rec.email)
@@ -116,7 +158,7 @@ export default function PatientProfile() {
         // mantém valores demo quando o cadastro não responde
       }
     }
-    loadAllergies()
+    loadHealthProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -229,6 +271,16 @@ export default function PatientProfile() {
             email,
             birth_date: birthDate,
             allergies: allergies.join('; '),
+            chronic_conditions: chronicConditions
+              .map((c) =>
+                c.cid && c.cid !== '—' && c.cid !== 'CID-10' ? `${c.cid} ${c.name}` : c.name,
+              )
+              .join('; '),
+            continuous_medications: continuousMedications
+              .map((m) =>
+                m.dosage && m.dosage !== 'Uso contínuo' ? `${m.name} — ${m.dosage}` : m.name,
+              )
+              .join('; '),
           })
           .catch(() => {})
       }

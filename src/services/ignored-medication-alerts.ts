@@ -17,11 +17,16 @@ export interface IgnoredMedicationAlert {
   alert_reason?: string
   alert_suggestion?: string
   justification: string
+  review_notes?: string
+  review_status?: 'pendente' | 'observado' | 'inaceitavel' | ''
+  reviewed_at?: string
+  reviewed_by?: string
   created?: string
   expand?: {
     patient?: { id: string; name?: string; cpf?: string }
     doctor?: { id: string; name?: string; crm?: string; council_number?: string }
     prescription?: { id: string; verification_code?: string }
+    reviewed_by?: { id: string; name?: string }
   }
 }
 
@@ -46,9 +51,7 @@ export async function createIgnoredMedicationAlert(
  * Extrai os alertas de risco alto (contraindicação/precaução) da análise,
  * já normalizados. Usado na emissão para gravar um registro por alerta.
  */
-export function extractRiskyAlerts(
-  alerts: MedicationAlert[] | undefined,
-): Array<{
+export function extractRiskyAlerts(alerts: MedicationAlert[] | undefined): Array<{
   medication_name: string
   risk_level: 'contraindicacao' | 'precaucao'
   reason?: string
@@ -92,7 +95,25 @@ export async function getIgnoredMedicationAlerts(
   return pb.collection('ignored_medication_alerts').getFullList<IgnoredMedicationAlert>({
     filter: clauses.join(' && '),
     sort: '-created',
-    expand: 'patient,doctor,prescription',
+    expand: 'patient,doctor,prescription,reviewed_by',
     limit: filter.limit || 300,
   })
+}
+
+export interface ReviewIgnoredAlertData {
+  review_notes: string
+  review_status: 'observado' | 'inaceitavel'
+  reviewed_by: string
+  reviewed_at: string
+}
+
+/**
+ * Registra a revisão/observação da clínica sobre uma justificativa de alerta
+ * ignorado. O médico autor é notificado separadamente pelo chamador.
+ */
+export async function reviewIgnoredMedicationAlert(
+  alertId: string,
+  data: ReviewIgnoredAlertData,
+): Promise<IgnoredMedicationAlert> {
+  return pb.collection('ignored_medication_alerts').update<IgnoredMedicationAlert>(alertId, data)
 }
