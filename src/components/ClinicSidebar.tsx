@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Kanban,
   Sparkles,
+  ShieldAlert,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -33,6 +34,12 @@ export function ClinicSidebar() {
       to: '/clinic/whatsapp',
       label: 'Portal WhatsApp',
       icon: MessageSquare,
+      roles: ['clinic', 'secretaria', 'admin'],
+    },
+    {
+      to: '/clinic/alertas-ignorados',
+      label: 'Alertas Ignorados',
+      icon: ShieldAlert,
       roles: ['clinic', 'secretaria', 'admin'],
     },
     {

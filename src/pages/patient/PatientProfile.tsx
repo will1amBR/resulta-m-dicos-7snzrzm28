@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import pb from '@/lib/pocketbase/client'
+import { getPatient } from '@/services/patients'
 
 export interface ContinuousMedicationItem {
   id: string
@@ -90,6 +91,34 @@ export default function PatientProfile() {
   const [newMedDosage, setNewMedDosage] = useState('')
 
   const [isSaving, setIsSaving] = useState(false)
+
+  // Carrega alergias gravadas no cadastro do paciente (coleção patients)
+  useEffect(() => {
+    const loadAllergies = async () => {
+      let patientId: string | undefined =
+        user?.patient_link && typeof user.patient_link === 'string'
+          ? user.patient_link
+          : (user?.expand?.patient_link as any)?.id
+      if (!patientId) return
+      try {
+        const rec = await getPatient(patientId)
+        const raw = (rec as any)?.allergies || ''
+        const list = String(raw)
+          .split(/[,;\n]/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+        setAllergies(list)
+        if (rec?.birth_date) setBirthDate(rec.birth_date.slice(0, 10))
+        if (rec?.name) setName(rec.name)
+        if (rec?.email) setEmail(rec.email)
+        if (rec?.phone) setPhone(rec.phone)
+      } catch {
+        // mantém valores demo quando o cadastro não responde
+      }
+    }
+    loadAllergies()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Compute BMI (IMC) automatically
   const heightInMeters = heightCm > 0 ? heightCm / 100 : 0
@@ -199,6 +228,7 @@ export default function PatientProfile() {
             phone,
             email,
             birth_date: birthDate,
+            allergies: allergies.join('; '),
           })
           .catch(() => {})
       }
@@ -465,7 +495,8 @@ export default function PatientProfile() {
                 <AlertTriangle className="h-4 w-4 text-amber-500" /> Alergias & Reações Adversas
               </CardTitle>
               <CardDescription className="text-xs">
-                Medicamentos, alimentos ou substâncias que causam reação alérgica
+                Medicamentos, alimentos ou substâncias que causam reação alérgica. Salvas no seu
+                cadastro e usadas pela análise cruzada de medicamentos.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 text-xs">

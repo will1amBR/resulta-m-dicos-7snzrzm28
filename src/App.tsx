@@ -30,6 +30,7 @@ import ClinicEstoque from './pages/clinic/ClinicEstoque'
 import StaffLimpeza from './pages/staff/StaffLimpeza'
 import ClinicWhatsApp from './pages/clinic/ClinicWhatsApp'
 import ClinicCrm from './pages/clinic/ClinicCrm'
+import ClinicIgnoredAlerts from './pages/clinic/ClinicIgnoredAlerts'
 import PatientDashboard from './pages/patient/PatientDashboard'
 import PatientNewAppointment from './pages/patient/PatientNewAppointment'
 import PatientRecords from './pages/patient/PatientRecords'
@@ -206,6 +207,14 @@ const App = () => (
               element={
                 <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
                   <ClinicWhatsApp />
+                </RoleGuard>
+              }
+            />
+            <Route
+              path="/clinic/alertas-ignorados"
+              element={
+                <RoleGuard allow={['clinic', 'secretaria', 'admin']}>
+                  <ClinicIgnoredAlerts />
                 </RoleGuard>
               }
             />

@@ -58,6 +58,10 @@ import { getPatients } from '@/services/patients'
 import { searchMedications } from '@/services/medications'
 import { analyzeMedications } from '@/services/medication-analysis'
 import {
+  createIgnoredMedicationAlert,
+  extractRiskyAlerts,
+} from '@/services/ignored-medication-alerts'
+import {
   getDoctorPrescriptions,
   createPrescription,
   updatePrescriptionStatus,
@@ -339,6 +343,30 @@ export default function DoctorReceitas() {
         status: 'emitida',
         sent_via: 'nenhum',
       })
+
+      // Histórico estruturado de alertas ignorados: um registro por alerta de
+      // risco alto, com o motivo, a sugestão da análise e a justificativa.
+      const risky = extractRiskyAlerts(aiAlerts)
+      if (risky.length > 0) {
+        try {
+          await Promise.all(
+            risky.map((r) =>
+              createIgnoredMedicationAlert({
+                patient: selectedPatient.id,
+                doctor: doctorId,
+                prescription: newRx?.id,
+                medication_name: r.medication_name,
+                risk_level: r.risk_level,
+                alert_reason: r.reason,
+                alert_suggestion: r.suggestion,
+                justification: riskJustification.trim(),
+              }),
+            ),
+          )
+        } catch {
+          // Falha ao gravar o histórico não deve impedir a emissão da receita
+        }
+      }
 
       // If certificate not validated, create an in-app reminder notification
       if (!isCertValidated && doctorId) {

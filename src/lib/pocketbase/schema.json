@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T04:17:22.250Z",
+  "generatedAt": "2026-11-19T04:55:54.414Z",
   "collections": [
     {
       "name": "users",
@@ -215,6 +215,12 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "allergies",
+          "type": "text",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_patients_cpf ON patients (cpf)"]
@@ -1759,6 +1765,90 @@
       "indexes": [
         "CREATE INDEX idx_cl_stage ON crm_leads (stage)",
         "CREATE INDEX idx_cl_phone ON crm_leads (phone)"
+      ]
+    },
+    {
+      "name": "ignored_medication_alerts",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "patient",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "patients"
+        },
+        {
+          "name": "doctor",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "prescription",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "prescriptions"
+        },
+        {
+          "name": "medication_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "risk_level",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["contraindicacao", "precaucao"]
+        },
+        {
+          "name": "alert_reason",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "alert_suggestion",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "justification",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_ima_patient ON ignored_medication_alerts (patient)",
+        "CREATE INDEX idx_ima_doctor ON ignored_medication_alerts (doctor)",
+        "CREATE INDEX idx_ima_created ON ignored_medication_alerts (created)"
       ]
     }
   ]
