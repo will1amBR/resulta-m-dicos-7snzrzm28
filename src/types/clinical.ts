@@ -222,17 +222,54 @@ export interface ClinicStats {
   avgConsultationMinutes: number // ex: 28 min
 }
 
+export type MedicationRiskLevel = 'contraindicacao' | 'precaucao' | 'atencao' | 'ok'
+
+export const RISK_LEVEL_RANK: Record<MedicationRiskLevel, number> = {
+  contraindicacao: 3,
+  precaucao: 2,
+  atencao: 1,
+  ok: 0,
+}
+
+/** Contraindicação ou precaução exige justificativa obrigatória antes de emitir */
+export const riskRequiresJustification = (alerts: MedicationAlert[]): boolean =>
+  alerts.some((a) => RISK_LEVEL_RANK[(a.risk_level || 'ok') as MedicationRiskLevel] >= 2)
+
+export const maxRiskLevel = (alerts: MedicationAlert[]): MedicationRiskLevel => {
+  let max: MedicationRiskLevel = 'ok'
+  for (const a of alerts) {
+    const lvl = (a.risk_level || 'ok') as MedicationRiskLevel
+    if (RISK_LEVEL_RANK[lvl] > RISK_LEVEL_RANK[max]) max = lvl
+  }
+  return max
+}
+
 export interface MedicationAlert {
   medication: string
-  severity?: 'high' | 'medium' | 'none'
+  risk_level?: MedicationRiskLevel
   message?: string
   suggestion?: string
-  // Novo formato da análise em duas camadas (determinística + IA)
+  reason?: string
+  source?: 'deterministico' | 'ia' | 'ia+deterministico' | string
+  // Campos legados mantidos por compatibilidade com alertas já persistidos
+  severity?: 'high' | 'medium' | 'none'
   gravity?: 'alto' | 'precaucao' | 'ok'
   pair?: string
-  reason?: string
   suggested_alternative?: string
-  source?: 'deterministico' | 'ia'
+}
+
+/** Normaliza alertas legados (severity/gravity) para o novo formato com risk_level */
+export const normalizeMedicationAlert = (a: MedicationAlert): MedicationAlert => {
+  if (a.risk_level) return a
+  let lvl: MedicationRiskLevel = 'ok'
+  if (a.gravity === 'alto' || a.severity === 'high') lvl = 'contraindicacao'
+  else if (a.gravity === 'precaucao' || a.severity === 'medium') lvl = 'precaucao'
+  return {
+    ...a,
+    risk_level: lvl,
+    reason: a.reason || a.message,
+    suggestion: a.suggestion || a.suggested_alternative,
+  }
 }
 
 export interface Cid10Code {

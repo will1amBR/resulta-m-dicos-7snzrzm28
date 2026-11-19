@@ -50,10 +50,13 @@ import {
   MedicationAlert,
   CertificateStatus,
   Medication,
+  riskRequiresJustification,
+  maxRiskLevel,
 } from '@/types/clinical'
+import { Textarea } from '@/components/ui/textarea'
 import { getPatients } from '@/services/patients'
 import { searchMedications } from '@/services/medications'
-import { analyzeMedications } from '@/services/medications'
+import { analyzeMedications } from '@/services/medication-analysis'
 import {
   getDoctorPrescriptions,
   createPrescription,
@@ -111,6 +114,9 @@ export default function DoctorReceitas() {
   // AI Cross-Analysis
   const [aiAlerts, setAiAlerts] = useState<MedicationAlert[]>([])
   const [isAnalyzingAi, setIsAnalyzingAi] = useState(false)
+
+  // Justificativa clínica obrigatória para emitir com risco alto
+  const [riskJustification, setRiskJustification] = useState('')
 
   // Submitting
   const [isSubmittingRx, setIsSubmittingRx] = useState(false)
@@ -186,10 +192,7 @@ export default function DoctorReceitas() {
     try {
       const payload = {
         patient: pat?.id || 'demo-patient-analysis',
-        cid10_codes: [
-          'I10 - Hipertensão essencial',
-          'E11 - Diabetes mellitus não-insulino-dependente',
-        ],
+        cid10_codes: [] as Array<{ code: string; description?: string } | string>,
         prescribed_medications: items.map((i) => ({
           medication: i.medication,
           dosage: `${i.dosage}${i.frequency ? ` - ${i.frequency}` : ''}${i.period_days ? ` por ${i.period_days} dias` : ''}`,
@@ -197,12 +200,10 @@ export default function DoctorReceitas() {
         })),
       }
       const res = await analyzeMedications(payload)
-      const alerts = res.alerts || []
-      setAiAlerts(alerts)
+      setAiAlerts(res.alerts)
 
-      // Se houver alerta de severidade alta, emitir notificação push
-      const highRisk = alerts.find((a: any) => a.severity === 'high')
-      if (highRisk && items.length >= 2) {
+      // Se houver alerta de risco alto, emitir notificação in-app
+      if (res.max_risk_level === 'contraindicacao' && items.length >= 2) {
         notifyMedicationInteractionAlert(
           items[0].medication,
           items[1]?.medication || 'outro medicamento',
@@ -210,12 +211,23 @@ export default function DoctorReceitas() {
         )
       }
     } catch {
-      // Fallback: rule-based check
       setAiAlerts([])
     } finally {
       setIsAnalyzingAi(false)
     }
   }
+
+  // Nível de risco máximo ativo: exige justificativa se contraindicacao/precaucao
+  const riskBlocking =
+    !isAnalyzingAi && prescriptionItems.length > 0 && riskRequiresJustification(aiAlerts)
+  const emitBlocked = riskBlocking && riskJustification.trim().length < 10
+  const activeRiskLevel = maxRiskLevel(aiAlerts)
+
+  // Se o risco sumir (itens removidos, paciente trocado), limpa a justificativa antiga
+  useEffect(() => {
+    if (!riskBlocking && riskJustification) setRiskJustification('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [riskBlocking])
 
   // Load history list
   const loadHistory = async () => {
@@ -299,6 +311,17 @@ export default function DoctorReceitas() {
       return
     }
 
+    // Bloqueio: alerta de contraindicação/precaução exige justificativa clínica
+    if (riskBlocking && riskJustification.trim().length < 10) {
+      toast({
+        title: 'Justificativa clínica obrigatória',
+        description:
+          'A análise cruzada detectou risco de contraindicação ou precaução. Escreva a justificativa antes de emitir.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsSubmittingRx(true)
     try {
       const doctorId = user?.id || ''
@@ -307,7 +330,11 @@ export default function DoctorReceitas() {
         doctor_id: doctorId,
         medications: prescriptionItems,
         certificate_validated: isCertValidated,
-        notes: rxNotes,
+        notes:
+          rxNotes +
+          (riskJustification.trim()
+            ? `\n\nJustificativa clínica de risco: ${riskJustification.trim()}`
+            : ''),
         ai_alerts: aiAlerts,
         status: 'emitida',
         sent_via: 'nenhum',
@@ -335,6 +362,7 @@ export default function DoctorReceitas() {
       setPrescriptionItems([])
       setRxNotes('')
       setAiAlerts([])
+      setRiskJustification('')
 
       // Refresh history list
       loadHistory()
@@ -798,13 +826,40 @@ export default function DoctorReceitas() {
                     </div>
                   )}
 
-                  {/* Action: Emit Button */}
+                  {/* Action: Emit Button — bloqueado quando há risco alto sem justificativa */}
                   <div className="pt-3 border-t border-slate-100 space-y-2">
+                    {riskBlocking && (
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 space-y-2 min-w-0">
+                        <p className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5 break-words">
+                          <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+                          Justificativa clínica obrigatória
+                        </p>
+                        <p className="text-[11px] text-amber-800 break-words leading-relaxed">
+                          A análise cruzada detectou{' '}
+                          <strong>
+                            {activeRiskLevel === 'contraindicacao'
+                              ? 'contraindicação'
+                              : 'risco que exige precaução'}
+                          </strong>{' '}
+                          para este paciente. Descreva por que a prescrição deve seguir mesmo assim
+                          (mín. 10 caracteres):
+                        </p>
+                        <Textarea
+                          value={riskJustification}
+                          onChange={(e) => setRiskJustification(e.target.value)}
+                          placeholder="Ex: Benefício supera o risco; paciente monitorado com exames de função renal em dia..."
+                          className="text-xs min-h-[64px] bg-white resize-y max-w-full"
+                        />
+                      </div>
+                    )}
                     <Button
                       type="button"
                       onClick={handleEmitPrescription}
                       disabled={
-                        isSubmittingRx || prescriptionItems.length === 0 || !selectedPatient
+                        isSubmittingRx ||
+                        prescriptionItems.length === 0 ||
+                        !selectedPatient ||
+                        emitBlocked
                       }
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-10 shadow-sm"
                     >
