@@ -28,6 +28,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { PrescriptionRecord, ClinicalDocument } from '@/types/clinical'
 import { getPrescriptionByVerificationCode, getVerificationUrl } from '@/services/prescriptions'
+import { registerDispensation } from '@/services/dispensations'
 import { getClinicalDocumentByVerificationCode } from '@/services/clinical_documents'
 import { PharmacyPrescriptionPDFView } from '@/components/PharmacyPrescriptionPDFView'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
@@ -71,6 +72,9 @@ export default function PublicPrescriptionVerify() {
       const rx = await getPrescriptionByVerificationCode(trimmed)
       if (rx) {
         setPrescription(rx)
+        // Prova de dispensação: notifica o médico prescritor (não bloqueia a
+        // consulta da farmácia em caso de falha).
+        registerDispensation(rx)
         return
       }
 

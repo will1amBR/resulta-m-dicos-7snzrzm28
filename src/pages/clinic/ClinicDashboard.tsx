@@ -37,6 +37,7 @@ import { LgpdAuditReportModal } from '@/components/LgpdAuditReportModal'
 import { ClinicAccessGrantsPanel } from '@/components/ClinicAccessGrantsPanel'
 import { ClinicSupplyConsumptionPanel } from '@/components/ClinicSupplyConsumptionPanel'
 import ClinicPrescriptionQualityPanel from '@/components/ClinicPrescriptionQualityPanel'
+import { ClinicOnboardingGuide } from '@/components/ClinicOnboardingGuide'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useToast } from '@/hooks/use-toast'
 import { ShieldCheck } from 'lucide-react'
@@ -145,6 +146,9 @@ export default function ClinicDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Guia de primeiro uso (onboarding da clínica) */}
+      <ClinicOnboardingGuide />
+
       {/* Header com Ações e Exportação */}
       <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-subtle flex flex-col lg:flex-row lg:items-center justify-between gap-4 min-w-0">
         <div className="min-w-0 flex-1">

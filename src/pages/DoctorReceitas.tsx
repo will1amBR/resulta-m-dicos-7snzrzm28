@@ -73,6 +73,7 @@ import { MedicationAlerts } from '@/components/MedicationAlerts'
 import { PrescriptionSendModal } from '@/components/PrescriptionSendModal'
 import { PharmacyPrescriptionPDFView } from '@/components/PharmacyPrescriptionPDFView'
 import { QRCodeSVG } from '@/components/QRCodeSVG'
+import { getDispensationsForPrescriptions } from '@/services/dispensations'
 import { notifyMedicationInteractionAlert } from '@/services/notifications'
 import { useNavigate } from 'react-router-dom'
 
@@ -136,6 +137,11 @@ export default function DoctorReceitas() {
   // Modal de Envio
   const [sendModalOpen, setSendModalOpen] = useState(false)
   const [selectedRxForSend, setSelectedRxForSend] = useState<PrescriptionRecord | null>(null)
+
+  // Provas de dispensação (consultas públicas por farmácia), por receita
+  const [dispensationCounts, setDispensationCounts] = useState<
+    Record<string, { count: number; last: string }>
+  >({})
 
   // View Details Modal / Print Preview Modal
   const [viewDetailsRx, setViewDetailsRx] = useState<PrescriptionRecord | null>(null)
@@ -242,6 +248,16 @@ export default function DoctorReceitas() {
         status: historyStatusFilter,
       })
       setHistoryList(list)
+      // Provas de dispensação (consultas por farmácia) para os badges
+      const disps = await getDispensationsForPrescriptions(list.map((r) => r.id))
+      const counts: Record<string, { count: number; last: string }> = {}
+      disps.forEach((d) => {
+        const cur = counts[d.prescription] || { count: 0, last: '' }
+        cur.count += 1
+        if (!cur.last || d.created > cur.last) cur.last = d.created
+        counts[d.prescription] = cur
+      })
+      setDispensationCounts(counts)
     } catch (err) {
       console.error(err)
     } finally {
@@ -1003,6 +1019,7 @@ export default function DoctorReceitas() {
 
                 const isSent = rx.status === 'enviada'
                 const sendMethod = rx.sent_via || 'nenhum'
+                const disp = dispensationCounts[rx.id]
 
                 return (
                   <Card
@@ -1029,6 +1046,27 @@ export default function DoctorReceitas() {
                               >
                                 {isSent ? '✓ Enviada' : 'Emitida (Não enviada)'}
                               </Badge>
+                              {disp && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] gap-1 border-violet-300 bg-violet-50 text-violet-800 font-semibold"
+                                  title="Consultas públicas feitas por farmácias nesta receita"
+                                >
+                                  <Pill className="h-3 w-3 shrink-0" />
+                                  <span className="truncate">
+                                    Farmácia consultou em{' '}
+                                    {disp.last
+                                      ? new Date(disp.last).toLocaleString('pt-BR', {
+                                          day: '2-digit',
+                                          month: '2-digit',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })
+                                      : '—'}{' '}
+                                    · {disp.count} consulta{disp.count > 1 ? 's' : ''}
+                                  </span>
+                                </Badge>
+                              )}
                               {rx.certificate_validated ? (
                                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-300 text-[10px] gap-1">
                                   <ShieldCheck className="h-3 w-3" /> ICP-Brasil
@@ -1204,6 +1242,23 @@ export default function DoctorReceitas() {
                   </p>
                 </div>
               </div>
+
+              {viewDetailsRx && dispensationCounts[viewDetailsRx.id] && (
+                <div className="p-2.5 bg-violet-50/70 border border-violet-200 rounded-lg text-xs text-violet-900 flex items-center gap-2">
+                  <Pill className="h-3.5 w-3.5 shrink-0" />
+                  <span className="break-words">
+                    Consultada por farmácia em{' '}
+                    {new Date(dispensationCounts[viewDetailsRx.id].last).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}{' '}
+                    · {dispensationCounts[viewDetailsRx.id].count} consulta
+                    {dispensationCounts[viewDetailsRx.id].count > 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
 
               {/* Patient details */}
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center text-xs">
