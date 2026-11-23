@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T15:32:50.312Z",
+  "generatedAt": "2026-11-23T15:47:08.470Z",
   "collections": [
     {
       "name": "users",
@@ -1888,6 +1888,97 @@
         "CREATE INDEX idx_ima_doctor ON ignored_medication_alerts (doctor)",
         "CREATE INDEX idx_ima_created ON ignored_medication_alerts (created)"
       ]
+    },
+    {
+      "name": "prescription_dispensations",
+      "type": "base",
+      "apiRules": {
+        "list": "prescription.doctor_id = @request.auth.id",
+        "view": "prescription.doctor_id = @request.auth.id",
+        "create": "",
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "prescription",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "prescriptions"
+        },
+        {
+          "name": "verification_code",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "pharmacy_name",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_pd_prescription ON prescription_dispensations (prescription)",
+        "CREATE INDEX idx_pd_created ON prescription_dispensations (created)"
+      ]
+    },
+    {
+      "name": "clinic_onboarding_dismissals",
+      "type": "base",
+      "apiRules": {
+        "list": "user.id = @request.auth.id",
+        "view": "user.id = @request.auth.id",
+        "create": "user.id = @request.auth.id",
+        "update": "user.id = @request.auth.id",
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "user",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "dismissed",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_cod_user ON clinic_onboarding_dismissals (user)"]
     }
   ]
 }

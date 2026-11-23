@@ -1,4 +1,4 @@
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 import { PrescriptionRecord } from '@/types/clinical'
 
 export interface PrescriptionDispensation {

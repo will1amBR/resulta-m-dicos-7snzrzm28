@@ -15,7 +15,7 @@ import {
   MessageSquareText,
   X,
 } from 'lucide-react'
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { getClinicAppointments, getClinicDoctors, getClinicPatients } from '@/services/clinic'
 import { getWhatsAppQueue } from '@/services/whatsapp'

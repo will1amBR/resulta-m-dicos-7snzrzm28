@@ -3,9 +3,11 @@
 // receita, cria a prova e notifica o médico prescritor in-app (sino), com
 // anti-spam (agregação de consultas repetidas em janela curta).
 
-const ANTI_SPAM_WINDOW_MIN = 60 // minutos sem notificar de novo a mesma receita
-
 onRecordAfterCreateSuccess((e) => {
+  // Callbacks rodam em um pool de VM separado no JSVM do PocketBase: toda
+  // constante usada aqui precisa estar declarada DENTRO do callback.
+  const ANTI_SPAM_WINDOW_MIN = 60 // minutos sem notificar de novo a mesma receita
+
   const prescriptionId = e.record.getString('prescription')
   const code = e.record.getString('verification_code') || prescriptionId
   const pharmacyName = e.record.getString('pharmacy_name') || ''
@@ -69,7 +71,6 @@ onRecordAfterCreateSuccess((e) => {
 
     // Agrega contagem na própria prova (para o badge "N consultas")
     try {
-      let total = 0
       const rows = $app.findRecordsByFilter(
         'prescription_dispensations',
         'prescription = {:pid}',
@@ -78,7 +79,7 @@ onRecordAfterCreateSuccess((e) => {
         0,
         { pid: prescriptionId },
       )
-      total = rows ? rows.length : 0
+      const total = rows ? rows.length : 0
       if (e.record) {
         e.record.set('consult_count', total)
       }

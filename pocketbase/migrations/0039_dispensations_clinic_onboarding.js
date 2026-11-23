@@ -44,6 +44,8 @@ migrate(
             required: false,
             max: 200,
           },
+          { name: 'created', type: 'autodate', onCreate: true, onUpdate: false },
+          { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true },
         ],
         indexes: [
           'CREATE INDEX idx_pd_prescription ON prescription_dispensations (prescription)',
@@ -88,6 +90,8 @@ migrate(
             type: 'bool',
             required: false,
           },
+          { name: 'created', type: 'autodate', onCreate: true, onUpdate: false },
+          { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true },
         ],
         indexes: ['CREATE UNIQUE INDEX idx_cod_user ON clinic_onboarding_dismissals (user)'],
         listRule: 'user.id = @request.auth.id',
